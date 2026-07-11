@@ -20,7 +20,7 @@ public class LobFireCommand : LaughmanCard
     public override IEnumerable<CardKeyword> CanonicalKeywords =>
         new[] { CardKeyword.Exhaust };
 
-    public LobFireCommand() : base(1, CardType.Skill, CardRarity.Uncommon, TargetType.Self) { }
+    public LobFireCommand() : base(1, CardType.Attack, CardRarity.Uncommon, TargetType.Self) { }
 
     protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

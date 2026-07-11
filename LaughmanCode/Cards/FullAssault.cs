@@ -20,7 +20,7 @@ public class FullAssault : LaughmanCard
     protected override IEnumerable<DynamicVar> CanonicalVars =>
         new[] { new DynamicVar("BlockPerMech", 0m) };
 
-    public FullAssault() : base(2, CardType.Attack, CardRarity.Rare, TargetType.Self) { }
+    public FullAssault() : base(2, CardType.Attack, CardRarity.Uncommon, TargetType.Self) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

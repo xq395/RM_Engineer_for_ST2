@@ -1,5 +1,7 @@
+using BaseLib.Config;
 using Godot;
 using HarmonyLib;
+using Laughman.LaughmanCode.Config;
 using MegaCrit.Sts2.Core.Modding;
 
 namespace Laughman.LaughmanCode;
@@ -13,6 +15,9 @@ public partial class MainFile : Node
 
     public static void Initialize()
     {
+        // 注册模组配置（削弱版开关等）。
+        ModConfigRegistry.Register(ModId, new LaughmanConfig());
+
         Harmony harmony = new(ModId);
 
         harmony.PatchAll();

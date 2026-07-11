@@ -38,9 +38,9 @@ public class SentinelDeployment : LaughmanCard
 [Pool(typeof(LaughmanCardPool))]
 public class StalledSentinel : LaughmanCard
 {
-    // MechHp 与哨兵部署一致；Penalty 为负的力量/敏捷值（基础 -2，升级 -1）。
+    // MechHp 与哨兵部署一致；Penalty 为负的力量/敏捷值（基础 -3，升级后 -2）。
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        new[] { new DynamicVar("MechHp", 9m), new DynamicVar("Penalty", -2m) };
+        new[] { new DynamicVar("MechHp", 9m), new DynamicVar("Penalty", -3m) };
 
     public override IEnumerable<CardKeyword> CanonicalKeywords =>
         new[] { CardKeyword.Exhaust };

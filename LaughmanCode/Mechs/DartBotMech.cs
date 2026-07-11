@@ -3,12 +3,14 @@ using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.MonsterMoves.Intents;
 
 namespace Laughman.LaughmanCode.Mechs;
 
 // 飞镖机器人：蓄力玻璃炮，无屏卫。它本体是发射器，不具有飞行。
-// 行动链：休眠若干回合，开火 ×4（每次 BurstDamage），之后持续休息。
+// 行动链：休眠若干回合，开火 ×4（每次 BurstDamage + 2 倍力量），之后持续休息。
+// 力量双倍：飞镖是视觉队员的重点强化对象，但只打 4 次，1 倍偏少、5 倍过强，取 2 倍。
 public class DartBotMech : MechModel
 {
     private const int BurstCount = 4;
@@ -36,10 +38,12 @@ public class DartBotMech : MechModel
             }
             return;
         }
-        // 接下来 BurstCount 回合各开火一次。
+        // 接下来 BurstCount 回合各开火一次。力量双倍：powered attack 已含 1 倍，额外加 1 倍。
         if (stage < ChargeTurns + BurstCount)
         {
-            await AttackRandomEnemy(owner, combatState, BurstDamage);
+            decimal strength = Creature.GetPower<StrengthPower>()?.Amount ?? 0m;
+            decimal bonus = strength > 0m ? strength : 0m;
+            await AttackRandomEnemy(owner, combatState, BurstDamage + bonus);
         }
         // 之后持续休息。
     }

@@ -14,7 +14,7 @@ namespace Laughman.LaughmanCode.Cards;
 public class HeroDeployment : LaughmanCard
 {
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        new[] { new DynamicVar("MechHp", 18m) };
+        new[] { new DynamicVar("MechHp", 15m) };
 
     public override IEnumerable<CardKeyword> CanonicalKeywords =>
         new[] { CardKeyword.Exhaust };

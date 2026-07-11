@@ -79,11 +79,11 @@ public class InterferenceTest : LaughmanCard
 [Pool(typeof(LaughmanCardPool))]
 public class RepairChecklist : LaughmanCard
 {
-    protected override IEnumerable<DynamicVar> CanonicalVars => new DynamicVar[] { new DynamicVar("Heal", 8m), new BlockVar(8m, ValueProp.Move) };
+    protected override IEnumerable<DynamicVar> CanonicalVars => new DynamicVar[] { new DynamicVar("Heal", 8m), new BlockVar(6m, ValueProp.Move) };
     public RepairChecklist() : base(1, CardType.Skill, CardRarity.Common, TargetType.Self) { }
     public override bool GainsBlock => true;
-    protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p) { var target = TeamMemberUtils.RandomMech(Owner); if (target != null) await CreatureCmd.Heal(target, DynamicVars["Heal"].IntValue); else await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, p); }
-    protected override void OnUpgrade() { DynamicVars["Heal"].UpgradeValueBy(4m); DynamicVars.Block.UpgradeValueBy(4m); }
+    protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p) { var target = TeamMemberUtils.RandomMech(Owner); if (target != null) await CreatureCmd.Heal(target, DynamicVars["Heal"].IntValue); await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, p); }
+    protected override void OnUpgrade() { DynamicVars["Heal"].UpgradeValueBy(4m); DynamicVars.Block.UpgradeValueBy(3m); }
 }
 
 [Pool(typeof(LaughmanCardPool))]
@@ -107,7 +107,7 @@ public class InfantryNo4 : LaughmanCard
 {
     protected override IEnumerable<DynamicVar> CanonicalVars => new[] { new DynamicVar("MechHp", 13m) };
     public override IEnumerable<CardKeyword> CanonicalKeywords => new[] { CardKeyword.Exhaust };
-    public InfantryNo4() : base(1, CardType.Skill, CardRarity.Uncommon, TargetType.Self) { }
+    public InfantryNo4() : base(2, CardType.Skill, CardRarity.Uncommon, TargetType.Self) { }
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p) => await MechManager.SummonMech<InfantryNo4Mech>(Owner, DynamicVars["MechHp"].IntValue);
     protected override void OnUpgrade() => DynamicVars["MechHp"].UpgradeValueBy(5m);
 }
@@ -135,7 +135,7 @@ public class AiSentinel : LaughmanCard
 {
     protected override IEnumerable<DynamicVar> CanonicalVars => new DynamicVar[] { new DynamicVar("Block", 10m), new DynamicVar("HitCount", 5m) };
     public override IEnumerable<CardKeyword> CanonicalKeywords => new[] { CardKeyword.Exhaust };
-    public AiSentinel() : base(1, CardType.Skill, CardRarity.Uncommon, TargetType.Self) { }
+    public AiSentinel() : base(1, CardType.Attack, CardRarity.Uncommon, TargetType.Self) { }
     protected override bool IsPlayable => Owner.Creature.Pets.Any(p => p.Monster is SentinelMech && !p.IsDead);
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p) { foreach (var s in Owner.Creature.Pets.Where(pet => pet.Monster is SentinelMech && !pet.IsDead)) { var power = await PowerCmd.Apply<AiSentinelPower>(c, s, 1m, Owner.Creature, this); if (power != null) { power.BlockAmount = DynamicVars["Block"].IntValue; power.HitCount = DynamicVars["HitCount"].IntValue; } } }
     protected override void OnUpgrade() { DynamicVars["Block"].UpgradeValueBy(2m); DynamicVars["HitCount"].UpgradeValueBy(1m); }
@@ -447,9 +447,9 @@ public class ChampionForm : LaughmanCard
         }
         await CreatureCmd.GainMaxHp(target, 12m);
         await CreatureCmd.Heal(target, 12m);
-        await PowerCmd.Apply<StrengthPower>(c, target, 6m, Owner.Creature, this);
-        await PowerCmd.Apply<PlatingPower>(c, target, 6m, Owner.Creature, this);
-        await PowerCmd.Apply<DexterityPower>(c, target, 6m, Owner.Creature, this);
+        await PowerCmd.Apply<StrengthPower>(c, target, 5m, Owner.Creature, this);
+        await PowerCmd.Apply<PlatingPower>(c, target, 5m, Owner.Creature, this);
+        await PowerCmd.Apply<DexterityPower>(c, target, 5m, Owner.Creature, this);
         await PowerCmd.Apply<ChampionFormPower>(c, target, 1m, Owner.Creature, this);
     }
 

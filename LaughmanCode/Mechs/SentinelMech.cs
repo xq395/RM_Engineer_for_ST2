@@ -1,3 +1,4 @@
+using Laughman.LaughmanCode.Config;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Players;
@@ -9,7 +10,7 @@ namespace Laughman.LaughmanCode.Mechs;
 // 哨兵机甲：专职肉盾，拥有屏卫。每回合给自己高格挡（可再生的吸收池）+ 小攻击。
 public class SentinelMech : MechModel, IRevivableMech
 {
-    private const int SelfBlock = 7;
+    private static int SelfBlock => WeakHelper.V(5, 7);
     private const int AttackDamage = 1;
 
     public override bool IsGuard => true;

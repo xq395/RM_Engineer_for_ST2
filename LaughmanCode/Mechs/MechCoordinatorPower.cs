@@ -11,6 +11,7 @@ using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Entities.Powers;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.MonsterMoves.Intents;
 using MegaCrit.Sts2.Core.ValueProps;
 using Laughman.LaughmanCode.Extensions;
@@ -89,6 +90,22 @@ public class MechCoordinatorPower : CustomPowerModel
             }
 
             await mech.PerformTurn(owner, combatState);
+
+            // 覆甲结算：机甲是 pet，其身上的原版 PlatingPower 收不到回合 hook
+            // （IterateHookListeners 只含正式参战单位的 powers，不含 pet 的），所以覆甲既不会
+            // 自己转成格挡、也不会自己递减。这里由协调器在机甲行动后手动补上，还原原版覆甲语义：
+            // 每回合给等于当前层数的格挡，然后层数 -1（衰减）。
+            if (!mech.Creature.IsDead)
+            {
+                var platingPower = mech.Creature.GetPower<PlatingPower>();
+                int plating = platingPower?.Amount ?? 0;
+                if (plating > 0 && platingPower != null)
+                {
+                    await CreatureCmd.GainBlock(mech.Creature, plating, ValueProp.Unpowered, null);
+                    await PowerCmd.Decrement(platingPower);
+                }
+            }
+
             if (!mech.Creature.IsDead && mech.Creature.HasPower<ChampionFormPower>())
             {
                 await TeamMemberUtils.TriggerRandom(owner, choiceContext);

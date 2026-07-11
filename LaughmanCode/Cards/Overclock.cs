@@ -26,7 +26,7 @@ public class Overclock : LaughmanCard
     public override IEnumerable<CardKeyword> CanonicalKeywords =>
         new[] { CardKeyword.Exhaust };
 
-    public Overclock() : base(1, CardType.Skill, CardRarity.Uncommon, TargetType.Self) { }
+    public Overclock() : base(1, CardType.Attack, CardRarity.Uncommon, TargetType.Self) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

@@ -1,5 +1,8 @@
 using MegaCrit.Sts2.Core.Combat;
+using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Players;
+using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.MonsterMoves.Intents;
 
 namespace Laughman.LaughmanCode.Mechs;
@@ -9,7 +12,16 @@ namespace Laughman.LaughmanCode.Mechs;
 //  - 吊射（由 U5 吊射指令切换）：休息一回合 → 下回合放大招，循环。
 public class HeroMech : MechModel, IRevivableMech
 {
-    private const int PlainDamage = 12;
+    private static int PlainDamage => Laughman.LaughmanCode.Config.WeakHelper.V(9, 11);
+
+    // 英雄自身攻击时的力量倍率：平射/浪潮双倍，吊射四倍。
+    // powered attack 已自动含 1 倍力量，这里把额外的 (倍率-1) 倍力量加进伤害里。
+    private decimal BonusStrengthDamage(decimal multiplier)
+    {
+        decimal strength = Creature.GetPower<StrengthPower>()?.Amount ?? 0m;
+        if (strength <= 0m) return 0m;
+        return strength * (multiplier - 1m);
+    }
 
     // 吊射模式与其伤害（0 表示未启用吊射，仍用平射）。
     public bool LobFireMode { get; private set; }
@@ -21,8 +33,7 @@ public class HeroMech : MechModel, IRevivableMech
     // 吊射循环状态：true = 本回合休息（蓄力），下回合开火。
     private bool _resting;
 
-    // 浪潮模式下由「我即浪潮」借用 payoff 设置：本回合休息一次（这台英雄很累了）。
-    private bool _tidalRestNextTurn;
+
 
     // 由 U5 卡调用：切换为吊射模式并设定大招伤害。
     public void EnableLobFire(int damage)
@@ -32,16 +43,10 @@ public class HeroMech : MechModel, IRevivableMech
         _resting = true; // 切换后先蓄力一回合。
     }
 
-    // 由「我即浪潮」调用：切换为浪潮模式（全体攻击 + 每回合行动两次）。
+    // 由「我即浪潮」调用：切换为浪潮模式（全体攻击 + 每回合行动两次，行动后自我借用隐身一回合）。
     public void EnableTidal()
     {
         TidalMode = true;
-    }
-
-    // 由「我即浪潮」借用 payoff 调用：让这台英雄下个自己的行动回合休息一次。
-    public void RequestTidalRest()
-    {
-        _tidalRestNextTurn = true;
     }
 
     public override async Task PerformTurn(Player owner, ICombatState combatState)
@@ -55,7 +60,8 @@ public class HeroMech : MechModel, IRevivableMech
             }
             else
             {
-                await AttackRandomEnemy(owner, combatState, LobFireDamage);
+                // 吊射：力量四倍。
+                await AttackRandomEnemy(owner, combatState, LobFireDamage + BonusStrengthDamage(Laughman.LaughmanCode.Config.WeakHelper.V(3m, 4m)));
                 _resting = true;
             }
             return;
@@ -63,19 +69,22 @@ public class HeroMech : MechModel, IRevivableMech
 
         if (TidalMode)
         {
-            // 浪潮：太累时休息一回合。
-            if (_tidalRestNextTurn)
+            // 浪潮：全体攻击两次，然后自我借用隐身。
+            // 借用 2 层：本回合末施加，下个玩家回合开始 -1（仍隐身、不行动），
+            // 再下个回合开始归零恢复，从而形成攻击一回合、隐身一回合的循环。
+            // 浪潮：力量双倍。
+            decimal tidalDamage = PlainDamage + BonusStrengthDamage(2m);
+            await AttackAllEnemies(owner, combatState, tidalDamage);
+            await AttackAllEnemies(owner, combatState, tidalDamage);
+            if (!Creature.IsDead && !IsBorrowed)
             {
-                _tidalRestNextTurn = false;
-                return;
+                await PowerCmd.Apply<BorrowedPower>(new ThrowingPlayerChoiceContext(), Creature, 2m, owner.Creature, null);
             }
-            // 全体攻击，行动两次。
-            await AttackAllEnemies(owner, combatState, PlainDamage);
-            await AttackAllEnemies(owner, combatState, PlainDamage);
             return;
         }
 
-        await AttackRandomEnemy(owner, combatState, PlainDamage);
+        // 平射：力量双倍。
+        await AttackRandomEnemy(owner, combatState, PlainDamage + BonusStrengthDamage(2m));
     }
 
     public override void RefreshIntent(Player owner, ICombatState combatState)
@@ -96,15 +105,8 @@ public class HeroMech : MechModel, IRevivableMech
 
         if (TidalMode)
         {
-            if (_tidalRestNextTurn)
-            {
-                ShowIntent(new SleepIntent());
-            }
-            else
-            {
-                // 全体、两段。
-                ShowIntent(new FixedAttackIntent(PlainDamage, 2));
-            }
+            // 全体、两段。隐身回合由协调器统一显示 Sleep，不在此处处理。
+            ShowIntent(new FixedAttackIntent(PlainDamage, 2));
             return;
         }
 

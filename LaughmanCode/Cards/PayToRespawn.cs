@@ -17,7 +17,7 @@ namespace Laughman.LaughmanCode.Cards;
 [Pool(typeof(LaughmanCardPool))]
 public class PayToRespawn : LaughmanCard
 {
-    private const int GoldCost = 10;
+    private const int GoldCost = 6;
 
     protected override IEnumerable<DynamicVar> CanonicalVars =>
         new[] { new DynamicVar("ReviveHp", 10m) };

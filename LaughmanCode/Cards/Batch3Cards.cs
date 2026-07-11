@@ -22,15 +22,16 @@ namespace Laughman.LaughmanCode.Cards;
 [Pool(typeof(LaughmanCardPool))]
 public class RoutinePractice : LaughmanCard
 {
-    protected override IEnumerable<DynamicVar> CanonicalVars => new[] { new DamageVar(7m, ValueProp.Move) };
+    protected override IEnumerable<DynamicVar> CanonicalVars => new[] { new DamageVar(8m, ValueProp.Move) };
     public RoutinePractice() : base(1, CardType.Attack, CardRarity.Common, TargetType.AnyEnemy) { }
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
         ArgumentNullException.ThrowIfNull(p.Target);
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue).FromCard(this, p).Targeting(p.Target).WithHitFx("vfx/vfx_attack_slash").Execute(c);
+        await CardPileCmd.Draw(c, 1, Owner);
         if (TeamMemberUtils.AliveMechs(Owner).Count > 0)
         {
-            await CardPileCmd.Draw(c, 2, Owner);
+            await CardPileCmd.Draw(c, 1, Owner);
         }
     }
     protected override void OnUpgrade() => DynamicVars.Damage.UpgradeValueBy(3m);
@@ -146,21 +147,23 @@ public class BroadcastCut : LaughmanCard
 {
     private const int MaxWaves = 100;
     protected override IEnumerable<DynamicVar> CanonicalVars => new DynamicVar[] { new DamageVar(7m, ValueProp.Move) };
-    public BroadcastCut() : base(2, CardType.Attack, CardRarity.Uncommon, TargetType.AllEnemies) { }
+    public BroadcastCut() : base(1, CardType.Attack, CardRarity.Uncommon, TargetType.AllEnemies) { }
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
         var state = Owner.Creature.CombatState;
         if (state == null) return;
-        int pendingWaves = 1 + (await BorrowUtils.TryBorrow(c, Owner, 1) ? 1 : 0);
+        // 借用 1：此伤害翻倍。
+        decimal damage = DynamicVars.Damage.BaseValue * (await BorrowUtils.TryBorrow(c, Owner, 1) ? 2m : 1m);
+        // 每有一名敌人被此牌击杀，就重复一次（参考回响斩击）。
         int waves = 0;
-        while (pendingWaves > 0 && waves < MaxWaves && state.HittableEnemies.Any(e => !e.IsDead))
+        bool repeat = true;
+        while (repeat && waves < MaxWaves && state.HittableEnemies.Any(e => !e.IsDead))
         {
-            pendingWaves--;
             waves++;
             int aliveBefore = state.HittableEnemies.Count(e => !e.IsDead);
-            await DamageCmd.Attack(DynamicVars.Damage.BaseValue).FromCard(this, p).TargetingAllOpponents(state).WithHitFx("vfx/vfx_attack_slash").Execute(c);
+            await DamageCmd.Attack(damage).FromCard(this, p).TargetingAllOpponents(state).WithHitFx("vfx/vfx_attack_slash").Execute(c);
             int aliveAfter = state.HittableEnemies.Count(e => !e.IsDead);
-            if (aliveAfter > 0 && aliveAfter < aliveBefore) pendingWaves++;
+            repeat = aliveAfter > 0 && aliveAfter < aliveBefore;
         }
     }
     protected override void OnUpgrade() => DynamicVars.Damage.UpgradeValueBy(2m);
@@ -266,7 +269,7 @@ public class RoboticsFinals : LaughmanCard
 {
     protected override IEnumerable<DynamicVar> CanonicalVars => new[] { new DynamicVar("Actions", 1m) };
     public override IEnumerable<CardKeyword> CanonicalKeywords => new[] { CardKeyword.Exhaust };
-    public RoboticsFinals() : base(2, CardType.Skill, CardRarity.Rare, TargetType.Self) { }
+    public RoboticsFinals() : base(3, CardType.Attack, CardRarity.Rare, TargetType.Self) { }
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
         var combatState = Owner.Creature.CombatState;
@@ -353,25 +356,43 @@ public class ChampionParade : LaughmanCard
     protected override void OnUpgrade() => DynamicVars.Damage.UpgradeValueBy(6m);
 }
 
-// R16 熬夜调车：每回合抽牌；若没有车正在借用则借用 1，借到时给随机机器人力量+覆甲。
+// R16 熬夜调车：0 费透支攻击（对齐熬夜形态）。失 1 血、造成伤害，并给随机一辆吃力量的车 +1 力（调车）。借用 1：重复一次。
 [Pool(typeof(LaughmanCardPool))]
 public class AllNighterTuning : LaughmanCard
 {
-    protected override IEnumerable<DynamicVar> CanonicalVars => new[] { new DynamicVar("Buff", 2m) };
-    public AllNighterTuning() : base(2, CardType.Power, CardRarity.Rare, TargetType.Self) { }
+    protected override IEnumerable<DynamicVar> CanonicalVars => new[] { new DamageVar(6m, ValueProp.Move) };
+    public AllNighterTuning() : base(0, CardType.Attack, CardRarity.Rare, TargetType.AnyEnemy) { }
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
-        var power = await PowerCmd.Apply<AllNighterTuningPower>(c, Owner.Creature, 1m, Owner.Creature, this);
-        if (power != null) { power.StrengthAmount = DynamicVars["Buff"].IntValue; power.PlatingAmount = DynamicVars["Buff"].IntValue; }
+        ArgumentNullException.ThrowIfNull(p.Target);
+        await TuneOnce(c, p);
+        // 借用 1：重复一次（再失血、再打、再调一辆车）。
+        if (await BorrowUtils.TryBorrow(c, Owner, 1))
+        {
+            await TuneOnce(c, p);
+        }
     }
-    protected override void OnUpgrade() => DynamicVars["Buff"].UpgradeValueBy(1m);
+    private async Task TuneOnce(PlayerChoiceContext c, CardPlay p)
+    {
+        await CreatureCmd.Damage(c, Owner.Creature, 1m, ValueProp.Unblockable | ValueProp.Unpowered, Owner.Creature);
+        if (p.Target != null && !p.Target.IsDead)
+        {
+            await DamageCmd.Attack(DynamicVars.Damage.BaseValue).FromCard(this, p).Targeting(p.Target).WithHitFx("vfx/vfx_attack_slash").Execute(c);
+        }
+        var car = TeamMemberUtils.RandomStrengthMech(Owner);
+        if (car != null)
+        {
+            await PowerCmd.Apply<StrengthPower>(c, car, 1m, Owner.Creature, this);
+        }
+    }
+    protected override void OnUpgrade() => DynamicVars.Damage.UpgradeValueBy(3m);
 }
 
 // R17 技术暂停：为主角争取格挡，并抢修生命比例最低的机甲。
 [Pool(typeof(LaughmanCardPool))]
 public class TacticalTimeout : LaughmanCard
 {
-    protected override IEnumerable<DynamicVar> CanonicalVars => new DynamicVar[] { new BlockVar(12m, ValueProp.Move), new DynamicVar("Heal", 8m), new DynamicVar("Plating", 6m) };
+    protected override IEnumerable<DynamicVar> CanonicalVars => new DynamicVar[] { new BlockVar(12m, ValueProp.Move), new DynamicVar("Heal", 8m), new DynamicVar("Plating", 4m) };
     public override IEnumerable<CardKeyword> CanonicalKeywords => new[] { CardKeyword.Exhaust };
     public TacticalTimeout() : base(2, CardType.Skill, CardRarity.Rare, TargetType.Self) { }
     public override bool GainsBlock => true;
@@ -495,7 +516,7 @@ public class RecruitmentShowcase : LaughmanCard
 [Pool(typeof(LaughmanCardPool))]
 public class DismissalNotice : LaughmanCard
 {
-    protected override IEnumerable<DynamicVar> CanonicalVars => new DynamicVar[] { new DynamicVar("Energy", 1m), new DynamicVar("Cards", 2m) };
+    protected override IEnumerable<DynamicVar> CanonicalVars => new DynamicVar[] { new DynamicVar("Energy", 2m), new DynamicVar("Cards", 2m) };
     public override IEnumerable<CardKeyword> CanonicalKeywords => new[] { CardKeyword.Exhaust };
     public DismissalNotice() : base(0, CardType.Skill, CardRarity.Uncommon, TargetType.Self) { }
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
@@ -559,12 +580,8 @@ public class IAmTheWave : LaughmanCard
         var creature = await MechManager.SummonMech<HeroMech>(Owner, DynamicVars["MechHp"].IntValue);
         var hero = creature?.Monster as HeroMech
             ?? Owner.Creature.Pets.Select(pet => pet.Monster as HeroMech).FirstOrDefault(m => m != null && !m.Creature.IsDead);
+        // 进入浪潮模式：英雄每回合攻击所有敌人两次，行动后自我借用隐身一回合。
         hero?.EnableTidal();
-        // 爆发后力竭：只借用刚刚召唤或强化的这台英雄。
-        if (hero != null)
-        {
-            await BorrowUtils.TryBorrow(c, Owner, 1, mech => ReferenceEquals(mech, hero));
-        }
     }
     protected override void OnUpgrade() => _exhausts = false;
 }
@@ -688,4 +705,46 @@ public class SkyEyeRadar : LaughmanCard
         if (power != null) { power.ShacklesAmount = DynamicVars["Shackles"].IntValue; power.FlankingAmount = DynamicVars["Flanking"].IntValue; }
     }
     protected override void OnUpgrade() { DynamicVars["Shackles"].UpgradeValueBy(1m); DynamicVars["Flanking"].UpgradeValueBy(1m); }
+}
+
+// U 专注打击：高基础伤，机甲越多伤害越低（反机甲流补偿，服务技能惩罚/少机甲局）。
+[Pool(typeof(LaughmanCardPool))]
+public class FocusedStrike : LaughmanCard
+{
+    protected override IEnumerable<DynamicVar> CanonicalVars => new[] { new DamageVar(21m, ValueProp.Move) };
+    public FocusedStrike() : base(1, CardType.Attack, CardRarity.Uncommon, TargetType.AnyEnemy) { }
+    protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
+    {
+        ArgumentNullException.ThrowIfNull(p.Target);
+        int mechs = TeamMemberUtils.AliveMechs(Owner).Count;
+        decimal damage = Math.Max(0m, DynamicVars.Damage.BaseValue - 3m * mechs);
+        await DamageCmd.Attack(damage).FromCard(this, p).Targeting(p.Target).WithHitFx("vfx/vfx_attack_slash").Execute(c);
+    }
+    protected override void OnUpgrade() => DynamicVars.Damage.UpgradeValueBy(4m);
+}
+
+// U 协同打击：低费小伤，然后最近部署的机器人立即多行动一次（伤害随机甲强度走）。
+[Pool(typeof(LaughmanCardPool))]
+public class CoordinatedStrike : LaughmanCard
+{
+    protected override IEnumerable<DynamicVar> CanonicalVars => new[] { new DamageVar(6m, ValueProp.Move) };
+    public CoordinatedStrike() : base(1, CardType.Attack, CardRarity.Uncommon, TargetType.AnyEnemy) { }
+    protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
+    {
+        ArgumentNullException.ThrowIfNull(p.Target);
+        await DamageCmd.Attack(DynamicVars.Damage.BaseValue).FromCard(this, p).Targeting(p.Target).WithHitFx("vfx/vfx_attack_slash").Execute(c);
+        var combatState = Owner.Creature.CombatState;
+        if (combatState == null) return;
+        // 最近部署的机器人 = 宠物列表中最后加入且存活、未借用的机甲。
+        var mech = Owner.Creature.Pets
+            .Select(pet => pet.Monster as MechModel)
+            .Where(m => m != null && !m.Creature.IsDead && !m.IsBorrowed)
+            .LastOrDefault();
+        if (mech != null)
+        {
+            await mech.PerformTurn(Owner, combatState);
+            if (!mech.Creature.IsDead) mech.RefreshIntent(Owner, combatState);
+        }
+    }
+    protected override void OnUpgrade() => DynamicVars.Damage.UpgradeValueBy(3m);
 }

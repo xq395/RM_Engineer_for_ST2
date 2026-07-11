@@ -1,0 +1,6 @@
+{
+  "LAUGHMAN-WEAK_MODE_SECTION.title": "平衡模式",
+  "LAUGHMAN-WEAK_MODE.title": "削弱版",
+  "LAUGHMAN-WEAK_MODE.hover.title": "削弱版",
+  "LAUGHMAN-WEAK_MODE.hover.desc": "开启后（需重启游戏），本角色的大部分卡牌与机器人数值会切换为削弱值，整体强度约为“比原版略强、低于强势模组”。适合觉得默认版本过强的玩家。修改此选项后必须重启游戏才能生效。"
+}
