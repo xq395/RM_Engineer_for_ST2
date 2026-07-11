@@ -1,0 +1,6 @@
+<Project>
+    <PropertyGroup>
+        <!-- Use Godot/MegaDot 4.5.1 Mono for PCK export. -->
+        <GodotPath>C:/path/to/Godot_v4.5.1-stable_mono_win64.exe</GodotPath>
+    </PropertyGroup>
+</Project>
