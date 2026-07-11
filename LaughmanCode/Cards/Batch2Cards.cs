@@ -330,12 +330,17 @@ public class LoyalGuard : LaughmanCard
     public LoyalGuard() : base(-1, CardType.Skill, CardRarity.Rare, TargetType.Self) { }
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
-        if (!Owner.Creature.Pets.Any(pet => pet.Monster?.GetType() == typeof(InfantryMech) && !pet.IsDead)) await MechManager.SummonMech<InfantryMech>(Owner, 13);
         int times = ResolveEnergyXValue() + DynamicVars["Extra"].IntValue;
-        for (int i = 0; i < times; i++) await MechManager.SummonMech<InfantryMech>(Owner, 5);
-        // 老兵之“护”：玩家获得 X 层覆甲（X = 实际支付能量，不含升级附赠的额外召唤次数）。
-        int plating = ResolveEnergyXValue();
-        if (plating > 0) await PowerCmd.Apply<PlatingPower>(c, Owner.Creature, plating, Owner.Creature, this);
+        bool hasInfantry = Owner.Creature.Pets.Any(pet => pet.Monster?.GetType() == typeof(InfantryMech) && !pet.IsDead);
+        for (int i = 0; i < times; i++)
+        {
+            await MechManager.SummonMech<InfantryMech>(Owner, hasInfantry ? 6 : IsUpgraded ? 18 : 13);
+            if (hasInfantry)
+            {
+                await PowerCmd.Apply<PlatingPower>(c, Owner.Creature, 1m, Owner.Creature, this);
+            }
+            hasInfantry = true;
+        }
     }
     protected override void OnUpgrade() => DynamicVars["Extra"].UpgradeValueBy(1m);
 }

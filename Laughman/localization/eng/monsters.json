@@ -24,5 +24,5 @@
   "LAUGHMAN-DART_BOT_MECH.action.title": "行动链",
   "LAUGHMAN-DART_BOT_MECH.action.description": "休眠 2/1 回合，然后连续 4 次行动各攻击随机敌人 25 点；之后持续休眠。",
   "LAUGHMAN-COVENANT_DRONE_MECH.action.title": "行动链",
-  "LAUGHMAN-COVENANT_DRONE_MECH.action.description": "每次行动：扣 3 金币、扣自身 3 生命。\n若有其他机甲：给它 5/7 护盾并使其本回合临时失去 3/4 力量；自身获得 5/7 护盾并本回合临时获得 3/4 力量。\n若没有其他机甲：自身获得 5/7 护盾并本回合临时获得 2 力量。\n然后攻击随机敌人 5 次（基础伤害 0，吃自身力量）。金币不足 3 时休眠。飞行。"
+  "LAUGHMAN-COVENANT_DRONE_MECH.action.description": "扣 3 金币和自身 3 生命。\n有其他机甲时：其与自身获得 5/7 护盾；其临时失去 3/4 力量，自身临时获得 3/4 力量。无其他机甲时：自身获得 5/7 护盾和 2 点临时力量。\n攻击随机敌人 5 次。金币不足时休眠。飞行。"
 }

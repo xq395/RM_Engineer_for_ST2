@@ -264,14 +264,14 @@ public class AcmRegional : LaughmanCard
 [Pool(typeof(LaughmanCardPool))]
 public class RoboticsFinals : LaughmanCard
 {
-    private int _bonusActions;
+    protected override IEnumerable<DynamicVar> CanonicalVars => new[] { new DynamicVar("Actions", 1m) };
     public override IEnumerable<CardKeyword> CanonicalKeywords => new[] { CardKeyword.Exhaust };
     public RoboticsFinals() : base(2, CardType.Skill, CardRarity.Rare, TargetType.Self) { }
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
         var combatState = Owner.Creature.CombatState;
         if (combatState == null) return;
-        int times = 1 + _bonusActions + (await BorrowUtils.TryBorrow(c, Owner, 1) ? 1 : 0);
+        int times = DynamicVars["Actions"].IntValue + (await BorrowUtils.TryBorrow(c, Owner, 1) ? 1 : 0);
         for (int i = 0; i < times; i++)
         {
             var mechs = Owner.Creature.Pets
@@ -285,7 +285,7 @@ public class RoboticsFinals : LaughmanCard
             }
         }
     }
-    protected override void OnUpgrade() => _bonusActions = 1;
+    protected override void OnUpgrade() => DynamicVars["Actions"].UpgradeValueBy(1m);
 }
 
 // R14 世界技能大赛：从 3 张随机罕见/稀有工程师牌中选一张免费打出，借用 1 再选一张。
@@ -357,14 +357,14 @@ public class ChampionParade : LaughmanCard
 [Pool(typeof(LaughmanCardPool))]
 public class AllNighterTuning : LaughmanCard
 {
-    private int _amount = 2;
+    protected override IEnumerable<DynamicVar> CanonicalVars => new[] { new DynamicVar("Buff", 2m) };
     public AllNighterTuning() : base(2, CardType.Power, CardRarity.Rare, TargetType.Self) { }
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
         var power = await PowerCmd.Apply<AllNighterTuningPower>(c, Owner.Creature, 1m, Owner.Creature, this);
-        if (power != null) { power.StrengthAmount = _amount; power.PlatingAmount = _amount; }
+        if (power != null) { power.StrengthAmount = DynamicVars["Buff"].IntValue; power.PlatingAmount = DynamicVars["Buff"].IntValue; }
     }
-    protected override void OnUpgrade() => _amount = 3;
+    protected override void OnUpgrade() => DynamicVars["Buff"].UpgradeValueBy(1m);
 }
 
 // R17 技术暂停：为主角争取格挡，并抢修生命比例最低的机甲。
@@ -394,14 +394,14 @@ public class TacticalTimeout : LaughmanCard
 [Pool(typeof(LaughmanCardPool))]
 public class RuleOverhaul : LaughmanCard
 {
-    private int _blockAmount = 1;
+    protected override IEnumerable<DynamicVar> CanonicalVars => new[] { new BlockVar(1m, ValueProp.Move) };
     public RuleOverhaul() : base(2, CardType.Power, CardRarity.Rare, TargetType.Self) { }
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
         var power = await PowerCmd.Apply<RuleOverhaulPower>(c, Owner.Creature, 1m, Owner.Creature, this);
-        if (power != null) power.BlockAmount = _blockAmount;
+        if (power != null) power.BlockAmount = DynamicVars.Block.IntValue;
     }
-    protected override void OnUpgrade() => _blockAmount = 3;
+    protected override void OnUpgrade() => DynamicVars.Block.UpgradeValueBy(2m);
 }
 
 // R21 单刀直入：借用步兵突进，步兵承受可被防护减免的赛场伤害。消耗。
@@ -560,10 +560,10 @@ public class IAmTheWave : LaughmanCard
         var hero = creature?.Monster as HeroMech
             ?? Owner.Creature.Pets.Select(pet => pet.Monster as HeroMech).FirstOrDefault(m => m != null && !m.Creature.IsDead);
         hero?.EnableTidal();
-        // 借用 1：这台英雄很累了，休息一回合。
-        if (await BorrowUtils.TryBorrow(c, Owner, 1))
+        // 爆发后力竭：只借用刚刚召唤或强化的这台英雄。
+        if (hero != null)
         {
-            hero?.RequestTidalRest();
+            await BorrowUtils.TryBorrow(c, Owner, 1, mech => ReferenceEquals(mech, hero));
         }
     }
     protected override void OnUpgrade() => _exhausts = false;
@@ -614,9 +614,8 @@ public class BeaconDart : LaughmanCard
 [Pool(typeof(LaughmanCardPool))]
 public class PrecisionEngineering : LaughmanCard
 {
-    private int _increase = 1;
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        new[] { new DynamicVar("MechHp", 14m), new DynamicVar("Block", 4m), new DynamicVar("Gold", 2m), new DynamicVar("Actions", 6m) };
+        new[] { new DynamicVar("MechHp", 14m), new DynamicVar("Block", 4m), new DynamicVar("Gold", 2m), new DynamicVar("Actions", 6m), new DynamicVar("XBonus", 1m) };
     public PrecisionEngineering() : base(3, CardType.Power, CardRarity.Rare, TargetType.Self) { }
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
@@ -628,7 +627,7 @@ public class PrecisionEngineering : LaughmanCard
             engineer.MaxActions = DynamicVars["Actions"].IntValue;
         }
         var power = await PowerCmd.Apply<PrecisionEngineeringPower>(c, Owner.Creature, 1m, Owner.Creature, this);
-        if (power != null) power.Increase = _increase;
+        if (power != null) power.Increase = DynamicVars["XBonus"].IntValue;
     }
     protected override void OnUpgrade()
     {
@@ -636,7 +635,7 @@ public class PrecisionEngineering : LaughmanCard
         DynamicVars["Block"].UpgradeValueBy(3m);
         DynamicVars["Gold"].UpgradeValueBy(1m);
         DynamicVars["Actions"].UpgradeValueBy(2m);
-        _increase = 2;
+        DynamicVars["XBonus"].UpgradeValueBy(1m);
     }
 }
 
@@ -680,13 +679,13 @@ public class ImpactUL : LaughmanCard
 [Pool(typeof(LaughmanCardPool))]
 public class SkyEyeRadar : LaughmanCard
 {
-    private int _shackles = 2;
-    private int _flanking;
+    protected override IEnumerable<DynamicVar> CanonicalVars =>
+        new[] { new DynamicVar("Shackles", 2m), new DynamicVar("Flanking", 0m) };
     public SkyEyeRadar() : base(2, CardType.Power, CardRarity.Rare, TargetType.Self) { }
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
         var power = await PowerCmd.Apply<TianyanRadarPower>(c, Owner.Creature, 1m, Owner.Creature, this);
-        if (power != null) { power.ShacklesAmount = _shackles; power.FlankingAmount = _flanking; }
+        if (power != null) { power.ShacklesAmount = DynamicVars["Shackles"].IntValue; power.FlankingAmount = DynamicVars["Flanking"].IntValue; }
     }
-    protected override void OnUpgrade() { _shackles = 3; _flanking = 1; }
+    protected override void OnUpgrade() { DynamicVars["Shackles"].UpgradeValueBy(1m); DynamicVars["Flanking"].UpgradeValueBy(1m); }
 }
