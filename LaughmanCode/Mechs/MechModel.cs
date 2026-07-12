@@ -105,13 +105,20 @@ public abstract class MechModel : CustomMonsterModel
 
     // ---- 共享行为工具 ----
 
+    // 仅供“测试打击”这类立即行动效果使用；非攻击行为不会读取该目标。
+    public Creature? ForcedAttackTarget { get; set; }
+
     // 选择一个存活敌人作为机甲攻击目标：优先被「集火指令」标记的敌人，否则随机。
-    private static Creature? PickAttackTarget(Player owner, ICombatState combatState)
+    private Creature? PickAttackTarget(Player owner, ICombatState combatState)
     {
         var enemies = combatState.HittableEnemies.Where(e => !e.IsDead).ToList();
         if (enemies.Count == 0)
         {
             return null;
+        }
+        if (ForcedAttackTarget != null && enemies.Contains(ForcedAttackTarget))
+        {
+            return ForcedAttackTarget;
         }
         var marked = enemies.Where(e => e.HasPower<FocusFirePower>()).ToList();
         if (marked.Count > 0)

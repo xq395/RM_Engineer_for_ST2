@@ -27,12 +27,12 @@ public static class TeamMemberUtils
     }
 
     // 吃力量的机型：范围内随机，不厚此薄彼。
-    // 英雄(自攻双倍)、步兵、无人机、飞镖(自攻双倍)——都会实际用到力量。
-    // 不含哨兵(纯防御,只1点攻击)和工程(不攻击)，给它们力量是浪费。
+    // 英雄(自攻双倍)、步兵、哨兵、无人机、飞镖(自攻双倍)都会实际用到力量。
+    // 不含工程（不攻击）。
     public static Creature? RandomStrengthMech(Player owner)
     {
         var mechs = owner.Creature.Pets
-            .Where(p => !p.IsDead && p.Monster is HeroMech or InfantryMech or InfantryNo4Mech or DroneMech or CovenantDroneMech or DartBotMech)
+            .Where(p => !p.IsDead && p.Monster is HeroMech or InfantryMech or InfantryNo4Mech or SentinelMech or DroneMech or CovenantDroneMech or DartBotMech)
             .ToList();
         return mechs.Count == 0 ? null : mechs[owner.RunState.Rng.MonsterAi.NextInt(mechs.Count)];
     }
@@ -133,6 +133,24 @@ public static class TeamMemberUtils
         var chosen = tied[owner.RunState.Rng.MonsterAi.NextInt(tied.Count)]!;
         if (chosen.Amount <= 1) await PowerCmd.Remove(chosen);
         else await PowerCmd.ModifyAmount(context, chosen, -1m, null, null);
+    }
+
+    public static async Task<int> ClearAll(PlayerChoiceContext context, Player owner)
+    {
+        var powers = new MegaCrit.Sts2.Core.Models.PowerModel?[]
+        {
+            owner.Creature.GetPower<MechanicalMemberPower>(),
+            owner.Creature.GetPower<ElectricalMemberPower>(),
+            owner.Creature.GetPower<VisionMemberPower>(),
+            owner.Creature.GetPower<HardwareMemberPower>()
+        }.Where(power => power != null && power.Amount > 0).ToList();
+
+        int total = powers.Sum(power => power!.Amount);
+        foreach (var power in powers)
+        {
+            await PowerCmd.Remove(power!);
+        }
+        return total;
     }
 
     public static int Amount<T>(Player owner) where T : MegaCrit.Sts2.Core.Models.PowerModel

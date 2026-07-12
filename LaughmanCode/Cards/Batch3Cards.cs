@@ -512,6 +512,35 @@ public class RecruitmentShowcase : LaughmanCard
     protected override void OnUpgrade() { DynamicVars.Damage.UpgradeValueBy(2m); DynamicVars["Members"].UpgradeValueBy(1m); }
 }
 
+// R21 散伙饭：借用一台机甲，将所有队员一次性转化为伤害。
+[Pool(typeof(LaughmanCardPool))]
+public class FarewellDinner : LaughmanCard
+{
+    protected override IEnumerable<DynamicVar> CanonicalVars => new DynamicVar[]
+    {
+        new DamageVar(10m, ValueProp.Move),
+        new DynamicVar("PerMember", 4m)
+    };
+    public override IEnumerable<CardKeyword> CanonicalKeywords => new[] { CardKeyword.Exhaust };
+    public FarewellDinner() : base(2, CardType.Attack, CardRarity.Rare, TargetType.AnyEnemy) { }
+    protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
+    {
+        ArgumentNullException.ThrowIfNull(p.Target);
+        int members = 0;
+        if (await BorrowUtils.TryBorrow(c, Owner, 1))
+        {
+            members = await TeamMemberUtils.ClearAll(c, Owner);
+        }
+        decimal damage = DynamicVars.Damage.BaseValue + members * DynamicVars["PerMember"].BaseValue;
+        await DamageCmd.Attack(damage).FromCard(this, p).Targeting(p.Target).WithHitFx("vfx/vfx_attack_slash").Execute(c);
+    }
+    protected override void OnUpgrade()
+    {
+        DynamicVars.Damage.UpgradeValueBy(3m);
+        DynamicVars["PerMember"].UpgradeValueBy(1m);
+    }
+}
+
 // U27 清退通知：清退最高层队员，以烧牌风险换取能量。
 [Pool(typeof(LaughmanCardPool))]
 public class DismissalNotice : LaughmanCard
@@ -723,7 +752,7 @@ public class FocusedStrike : LaughmanCard
     protected override void OnUpgrade() => DynamicVars.Damage.UpgradeValueBy(4m);
 }
 
-// U 协同打击：低费小伤，然后最近部署的机器人立即多行动一次（伤害随机甲强度走）。
+// U 测试打击：低费小伤，然后最近部署的机器人立即行动，并优先攻击该目标。
 [Pool(typeof(LaughmanCardPool))]
 public class CoordinatedStrike : LaughmanCard
 {
@@ -742,7 +771,15 @@ public class CoordinatedStrike : LaughmanCard
             .LastOrDefault();
         if (mech != null)
         {
-            await mech.PerformTurn(Owner, combatState);
+            mech.ForcedAttackTarget = p.Target;
+            try
+            {
+                await mech.PerformTurn(Owner, combatState);
+            }
+            finally
+            {
+                mech.ForcedAttackTarget = null;
+            }
             if (!mech.Creature.IsDead) mech.RefreshIntent(Owner, combatState);
         }
     }

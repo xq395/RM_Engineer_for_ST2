@@ -3,17 +3,14 @@ using Laughman.LaughmanCode.Character;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Entities.Relics;
-using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 
 namespace Laughman.LaughmanCode.Relics;
 
-// 量产流水线（罕见）：每场战斗你第二次召唤机器人时，抽 3 张牌。
+// 量产流水线（稀有）：每场战斗第二次及以后召唤机器人时，获得 1 点能量。
 [Pool(typeof(LaughmanRelicPool))]
 public class MassProductionLine : LaughmanRelic
 {
-    private const int DrawAmount = 3;
-
-    public override RelicRarity Rarity => RelicRarity.Uncommon;
+    public override RelicRarity Rarity => RelicRarity.Rare;
 
     // 本场战斗的召唤次数（每场重置）。
     private int _summonsThisCombat;
@@ -28,11 +25,11 @@ public class MassProductionLine : LaughmanRelic
     public async Task OnSummon(Player owner)
     {
         _summonsThisCombat++;
-        if (_summonsThisCombat != 2)
+        if (_summonsThisCombat < 2)
         {
             return;
         }
         Flash();
-        await CardPileCmd.Draw(new ThrowingPlayerChoiceContext(), DrawAmount, owner);
+        await PlayerCmd.GainEnergy(1m, owner);
     }
 }

@@ -9,7 +9,7 @@ namespace Laughman.LaughmanCode.Mechs;
 
 // 英雄机甲：输出核心，无屏卫（被保护对象）。
 //  - 平射（默认）：每回合单体高伤。
-//  - 吊射（由 U5 吊射指令切换）：休息一回合 → 下回合放大招，循环。
+//  - 吊射（由 U5 吊射指令切换）：立即放大招 → 下回合休息，循环。
 public class HeroMech : MechModel, IRevivableMech
 {
     private static int PlainDamage => Laughman.LaughmanCode.Config.WeakHelper.V(9, 11);
@@ -30,7 +30,7 @@ public class HeroMech : MechModel, IRevivableMech
     // 浪潮模式（由「我即浪潮」切换）：攻击改为全体，且每回合行动两次。
     public bool TidalMode { get; private set; }
 
-    // 吊射循环状态：true = 本回合休息（蓄力），下回合开火。
+    // 吊射循环状态：true = 本回合休息，下回合开火。
     private bool _resting;
 
 
@@ -40,7 +40,7 @@ public class HeroMech : MechModel, IRevivableMech
     {
         LobFireMode = true;
         LobFireDamage = damage;
-        _resting = true; // 切换后先蓄力一回合。
+        _resting = false; // 切换后的首次行动立即开火。
     }
 
     // 由「我即浪潮」调用：切换为浪潮模式（全体攻击 + 每回合行动两次，行动后自我借用隐身一回合）。
@@ -53,7 +53,7 @@ public class HeroMech : MechModel, IRevivableMech
     {
         if (LobFireMode)
         {
-            // 吊射：休息 → 开火 交替。
+            // 吊射：开火 → 休息 交替。
             if (_resting)
             {
                 _resting = false;

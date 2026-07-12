@@ -13,14 +13,14 @@ using MegaCrit.Sts2.Core.Saves.Runs;
 
 namespace Laughman.LaughmanCode.Relics;
 
-// 超级电容（稀有）：每当你打出 17 张牌，一名随机友方步兵/哨兵/英雄获得 1 层飞坡。
+// 超级电容（罕见）：每当你打出 17 张牌，一名随机友方步兵/哨兵/英雄获得 1 层飞坡。
 // 出牌计数可跨战斗继承，触发后清零。
 [Pool(typeof(LaughmanRelicPool))]
 public class SuperCapacitor : LaughmanRelic
 {
     private const int Threshold = 17;
 
-    public override RelicRarity Rarity => RelicRarity.Rare;
+    public override RelicRarity Rarity => RelicRarity.Uncommon;
 
     // 跨战斗继承的出牌计数（0..16 循环）。
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]

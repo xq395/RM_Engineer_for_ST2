@@ -47,14 +47,14 @@ public abstract class LaughmanCard(int cost, CardType type, CardRarity rarity, T
         "DRONE_DEPLOYMENT" => new[] { LaughmanHoverTips.Term("DRONE_MECH"), LaughmanHoverTips.Term("FLYING"), LaughmanHoverTips.Term("UPKEEP") },
         "SWARM_DEPLOYMENT" => new[] { LaughmanHoverTips.Term("DART_MECH"), LaughmanHoverTips.Term("SLEEP") },
         "ARMOR_DEPLOY" => new[] { LaughmanHoverTips.Term("GUARD"), LaughmanHoverTips.PlatedArmor() },
-        "MECHANICAL_TRYOUT" => new[] { LaughmanHoverTips.Term("MECHANICAL_MEMBER") },
-        "ELECTRONICS_TRYOUT" => new[] { LaughmanHoverTips.Term("ELECTRICAL_MEMBER"), LaughmanHoverTips.PlatedArmor() },
-        "VISION_TRYOUT" => new[] { LaughmanHoverTips.Term("VISION_MEMBER") },
-        "HARDWARE_TRYOUT" => new[] { LaughmanHoverTips.Term("HARDWARE_MEMBER") },
-        "MECHANICAL_TRAINING" => new[] { LaughmanHoverTips.Term("MECHANICAL_MEMBER") },
-        "ELECTRICAL_TRAINING" => new[] { LaughmanHoverTips.Term("ELECTRICAL_MEMBER") },
-        "VISION_TRAINING" => new[] { LaughmanHoverTips.Term("VISION_MEMBER") },
-        "HARDWARE_TRAINING" => new[] { LaughmanHoverTips.Term("HARDWARE_MEMBER") },
+        "MECHANICAL_TRYOUT" => MemberHoverTips("MECHANICAL_MEMBER"),
+        "ELECTRONICS_TRYOUT" => new[] { LaughmanHoverTips.Term("TEAM_MEMBER"), LaughmanHoverTips.Term("ELECTRICAL_MEMBER"), LaughmanHoverTips.PlatedArmor() },
+        "VISION_TRYOUT" => MemberHoverTips("VISION_MEMBER"),
+        "HARDWARE_TRYOUT" => MemberHoverTips("HARDWARE_MEMBER"),
+        "MECHANICAL_TRAINING" => MemberHoverTips("MECHANICAL_MEMBER"),
+        "ELECTRICAL_TRAINING" => MemberHoverTips("ELECTRICAL_MEMBER"),
+        "VISION_TRAINING" => MemberHoverTips("VISION_MEMBER"),
+        "HARDWARE_TRAINING" => MemberHoverTips("HARDWARE_MEMBER"),
         "CRASH_COURSE" => TeamMemberHoverTips,
         "SOFTWARE_TRAINING_CHOICE" => new[] { LaughmanHoverTips.Term("VISION_MEMBER"), LaughmanHoverTips.Term("HARDWARE_MEMBER") },
         "CLEAR_ROLES" => TeamMemberHoverTips,
@@ -111,6 +111,7 @@ public abstract class LaughmanCard(int cost, CardType type, CardRarity rarity, T
             LaughmanHoverTips.Term("VISION_MEMBER"),
             LaughmanHoverTips.Term("HARDWARE_MEMBER")
         },
+        "FAREWELL_DINNER" => new[] { LaughmanHoverTips.Term("BORROW"), LaughmanHoverTips.Term("TEAM_MEMBER") },
         "MECH_COOLDOWN" => new[] { LaughmanHoverTips.Term("BORROW") },
         "COLLECTIVE_FIRE" => new[] { LaughmanHoverTips.Term("ROBOT"), LaughmanHoverTips.Term("FOCUS_FIRE") },
         "COORDINATED_STRIKE" => new[] { LaughmanHoverTips.Term("ROBOT") },
@@ -126,9 +127,16 @@ public abstract class LaughmanCard(int cost, CardType type, CardRarity rarity, T
 
     private static IHoverTip[] TeamMemberHoverTips =>
     [
+        LaughmanHoverTips.Term("TEAM_MEMBER"),
         LaughmanHoverTips.Term("MECHANICAL_MEMBER"),
         LaughmanHoverTips.Term("ELECTRICAL_MEMBER"),
         LaughmanHoverTips.Term("VISION_MEMBER"),
         LaughmanHoverTips.Term("HARDWARE_MEMBER")
+    ];
+
+    private static IHoverTip[] MemberHoverTips(string member) =>
+    [
+        LaughmanHoverTips.Term("TEAM_MEMBER"),
+        LaughmanHoverTips.Term(member)
     ];
 }

@@ -331,15 +331,27 @@ public class LoyalGuard : LaughmanCard
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
         int times = ResolveEnergyXValue() + DynamicVars["Extra"].IntValue;
-        bool hasInfantry = Owner.Creature.Pets.Any(pet => pet.Monster?.GetType() == typeof(InfantryMech) && !pet.IsDead);
-        for (int i = 0; i < times; i++)
+        if (times <= 0)
         {
-            await MechManager.SummonMech<InfantryMech>(Owner, hasInfantry ? 6 : IsUpgraded ? 18 : 13);
-            if (hasInfantry)
-            {
-                await PowerCmd.Apply<PlatingPower>(c, Owner.Creature, 1m, Owner.Creature, this);
-            }
-            hasInfantry = true;
+            return;
+        }
+
+        var infantry = MechManager.FindMech<InfantryMech>(Owner);
+        int upgrades = times;
+        if (infantry == null || infantry.IsDead)
+        {
+            infantry = await MechManager.SummonMech<InfantryMech>(Owner, IsUpgraded ? 18 : 13);
+            upgrades--;
+        }
+        if (infantry == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < upgrades; i++)
+        {
+            await CreatureCmd.GainMaxHp(infantry, 6m);
+            await PowerCmd.Apply<PlatingPower>(c, Owner.Creature, 1m, Owner.Creature, this);
         }
     }
     protected override void OnUpgrade() => DynamicVars["Extra"].UpgradeValueBy(1m);

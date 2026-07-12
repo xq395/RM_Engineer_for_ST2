@@ -18,7 +18,7 @@
   "LAUGHMAN-BORROWED_DEFENSE_LINE.description": "每场战斗你第一次 #y借用 机器人时，获得 8 点 #y格挡。",
   "LAUGHMAN-BORROWED_DEFENSE_LINE.flavor": "借来的盾，也是盾。",
   "LAUGHMAN-MASS_PRODUCTION_LINE.title": "量产流水线",
-  "LAUGHMAN-MASS_PRODUCTION_LINE.description": "每场战斗你第二次召唤机器人时，抽 3 张牌。",
+  "LAUGHMAN-MASS_PRODUCTION_LINE.description": "每场战斗第二次及以后召唤机器人时，获得 1 点能量。",
   "LAUGHMAN-MASS_PRODUCTION_LINE.flavor": "一台是样品，两台才是生产力。",
   "LAUGHMAN-SCRIBBLED_NOTEBOOK.title": "涂满的笔记本",
   "LAUGHMAN-SCRIBBLED_NOTEBOOK.description": "获得时，将一张 #y神化 和一张 #y悔恨 加入你的牌组。",

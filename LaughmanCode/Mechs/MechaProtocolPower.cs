@@ -11,7 +11,7 @@ using Laughman.LaughmanCode.Extensions;
 
 namespace Laughman.LaughmanCode.Mechs;
 
-// 机甲协议（能力）：每回合开始时，你的所有机器人各获得 1 点力量。
+// 视觉开源（能力）：每回合开始时，你的所有机器人各获得 1 点力量。
 public class MechaProtocolPower : CustomPowerModel
 {
     private const int StrengthPerTurn = 1;
