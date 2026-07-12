@@ -36,6 +36,11 @@ public abstract class LaughingThunderBase : LaughmanRelic
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
     public int PendingTransforms { get; set; }
 
+    // 地图历史可能在房间进入 hook 前后各触发一次更新；记录已经排队到哪次先古访问，
+    // 避免同一房间重复加入变卡机会。
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int ScheduledAncientVisits { get; set; }
+
     public override RelicRarity Rarity => RelicRarity.Starter;
 
     // 从地图历史推算已访问的先古之民数量，上限 3。替换遗物后仍然一致。
@@ -79,12 +84,14 @@ public abstract class LaughingThunderBase : LaughmanRelic
             return Task.CompletedTask;
         }
 
-        if (AncientVisits > MaxAncientVisits)
+        int visits = AncientVisits;
+        if (visits > MaxAncientVisits || visits <= ScheduledAncientVisits)
         {
             return Task.CompletedTask;
         }
 
-        PendingTransforms++;
+        PendingTransforms += visits - ScheduledAncientVisits;
+        ScheduledAncientVisits = visits;
         Flash();
         InvokeDisplayAmountChanged();
         return Task.CompletedTask;

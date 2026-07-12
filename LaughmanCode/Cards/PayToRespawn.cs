@@ -44,6 +44,8 @@ public class PayToRespawn : LaughmanCard
         await CreatureCmd.Heal(dead, DynamicVars["ReviveHp"].BaseValue);
         // 复活即获得一层小陀螺（本回合 50% 减伤），不再晕眩。
         await PowerCmd.Apply<GyroSpinPower>(choiceContext, dead, 1m, Owner.Creature, this);
+        // 死亡时保留的 Pet 节点可能仍处于不可交互状态，显式恢复状态栏、位置与意图。
+        MechManager.RefreshMechUi(Owner);
     }
 
     protected override void OnUpgrade()

@@ -12,7 +12,7 @@ using MegaCrit.Sts2.Core.ValueProps;
 
 namespace Laughman.LaughmanCode.Cards;
 
-// C8 协同射击：造成 5 点伤害，你每控制 1 台机器人额外造成 4 点伤害。
+// C8 协同打击：造成 5 点伤害，你每控制 1 台机器人额外造成 4 点伤害。
 [Pool(typeof(LaughmanCardPool))]
 public class CoordinatedFire : LaughmanCard
 {

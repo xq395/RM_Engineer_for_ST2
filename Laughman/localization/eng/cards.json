@@ -21,7 +21,7 @@
   "LAUGHMAN-TACTICAL_MOVE.description": "你和一台机甲各获得 {Block:diff()} 点 [gold]格挡[/gold]（优先选择带 [gold]屏卫[/gold] 的机甲）。\n抽 {DrawCount:diff()} 张牌。",
   "LAUGHMAN-BASE_SUPPLY.title": "基地补给",
   "LAUGHMAN-BASE_SUPPLY.description": "一台机甲回复 {HealAmount:diff()} 点生命，并获得 {StrengthPower:diff()} 点 [gold]力量[/gold]。\n若目标机甲已阵亡，改为复活至血量上限，并 [gold]晕眩[/gold] 一回合。",
-  "LAUGHMAN-COORDINATED_FIRE.title": "协同射击",
+  "LAUGHMAN-COORDINATED_FIRE.title": "协同打击",
   "LAUGHMAN-COORDINATED_FIRE.description": "造成 {Damage:diff()} 点伤害。\n你每控制 1 台机器人，额外造成 {PerMech:diff()} 点伤害。",
   "LAUGHMAN-HERO_DEPLOYMENT.title": "英雄部署",
   "LAUGHMAN-HERO_DEPLOYMENT.description": "召唤一台 [gold]英雄机甲{IfUpgraded:show:+}[/gold]（生命值 {MechHp:diff()}）。",

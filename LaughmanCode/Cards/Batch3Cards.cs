@@ -374,6 +374,7 @@ public class AllNighterTuning : LaughmanCard
     }
     private async Task TuneOnce(PlayerChoiceContext c, CardPlay p)
     {
+        await PlayerCmd.GainEnergy(1m, Owner);
         await CreatureCmd.Damage(c, Owner.Creature, 1m, ValueProp.Unblockable | ValueProp.Unpowered, Owner.Creature);
         if (p.Target != null && !p.Target.IsDead)
         {
@@ -582,7 +583,7 @@ public class MechCooldown : LaughmanCard
 [Pool(typeof(LaughmanCardPool))]
 public class CollectiveFire : LaughmanCard
 {
-    protected override IEnumerable<DynamicVar> CanonicalVars => new DynamicVar[] { new DamageVar(5m, ValueProp.Move), new DynamicVar("Turns", 1m) };
+    protected override IEnumerable<DynamicVar> CanonicalVars => new DynamicVar[] { new DamageVar(7m, ValueProp.Move), new DynamicVar("Turns", 2m) };
     public CollectiveFire() : base(2, CardType.Attack, CardRarity.Uncommon, TargetType.AnyEnemy) { }
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
@@ -593,7 +594,7 @@ public class CollectiveFire : LaughmanCard
             await PowerCmd.Apply<FocusFirePower>(c, p.Target, DynamicVars["Turns"].IntValue, Owner.Creature, this);
         }
     }
-    protected override void OnUpgrade() { DynamicVars.Damage.UpgradeValueBy(3m); DynamicVars["Turns"].UpgradeValueBy(1m); }
+    protected override void OnUpgrade() { DynamicVars.Damage.UpgradeValueBy(4m); DynamicVars["Turns"].UpgradeValueBy(2m); }
 }
 
 // R21 我即浪潮：召唤英雄并进入浪潮模式（全体攻击 + 每回合行动两次）。借用 1：这台英雄休息一回合。消耗（升级去消耗）。

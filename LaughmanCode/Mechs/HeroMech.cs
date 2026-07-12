@@ -98,7 +98,7 @@ public class HeroMech : MechModel, IRevivableMech
             }
             else
             {
-                ShowIntent(new FixedAttackIntent(LobFireDamage));
+                ShowIntent(new FixedAttackIntent((int)(LobFireDamage + BonusStrengthDamage(Laughman.LaughmanCode.Config.WeakHelper.V(3m, 4m)))));
             }
             return;
         }
@@ -106,10 +106,10 @@ public class HeroMech : MechModel, IRevivableMech
         if (TidalMode)
         {
             // 全体、两段。隐身回合由协调器统一显示 Sleep，不在此处处理。
-            ShowIntent(new FixedAttackIntent(PlainDamage, 2));
+            ShowIntent(new FixedAttackIntent((int)(PlainDamage + BonusStrengthDamage(2m)), 2));
             return;
         }
 
-        ShowIntent(new FixedAttackIntent(PlainDamage));
+        ShowIntent(new FixedAttackIntent((int)(PlainDamage + BonusStrengthDamage(2m))));
     }
 }

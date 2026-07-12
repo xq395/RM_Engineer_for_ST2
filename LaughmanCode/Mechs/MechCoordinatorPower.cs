@@ -115,6 +115,21 @@ public class MechCoordinatorPower : CustomPowerModel
                 mech.RefreshIntent(owner, combatState);
             }
         }
+
+        // Pet 不会自动收到正式参战单位的临时 Power 清理 hook。
+        // 新约无人机的 DarkShackles/FlexPotion 因此由协调器在整轮机甲行动后统一结算，
+        // 不能放在单台机甲行动后，否则后续机甲仍可能读到错误的力量状态。
+        foreach (var mech in GetMechs(owner))
+        {
+            if (mech.Creature.GetPower<FlexPotionPower>() is { } flex)
+            {
+                await PowerCmd.Remove(flex);
+            }
+            if (mech.Creature.GetPower<DarkShacklesPower>() is { } shackles)
+            {
+                await PowerCmd.Remove(shackles);
+            }
+        }
     }
 
     // 挂上时立刻刷新所有机器人意图。

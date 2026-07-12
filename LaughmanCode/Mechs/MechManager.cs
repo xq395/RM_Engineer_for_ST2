@@ -93,21 +93,20 @@ public static class MechManager
 
     private static Vector2 GetMechOffset(MechModel mech)
     {
-        // 分散站位：右侧下排（哨兵/步兵）+ 右侧上排（4号步兵）；左侧下排（英雄/工程）+ 左侧上排（飞镖）；无人机飞在正上方。
+        // 屏卫在右侧；英雄、工程、飞镖沿飞镖原横轴排成竖列；无人机置于高空。
         return mech switch
         {
             // 右侧上排（4号步兵，需放在 InfantryMech 之前，否则被基类匹配吞掉）
             InfantryNo4Mech => new Vector2(225f, -150f),
             // 右侧下排
-            SentinelMech => new Vector2(150f, 30f),
-            InfantryMech => new Vector2(300f, 30f),
+            SentinelMech => new Vector2(230f, 30f),
+            InfantryMech => new Vector2(380f, 30f),
             // 头顶高空
-            DroneMech => new Vector2(30f, -230f),
-            // 左侧下排
-            HeroMech => new Vector2(-160f, 30f),
-            EngineerMech => new Vector2(-310f, 30f),
-            // 左侧上排
-            DartBotMech => new Vector2(-235f, -150f),
+            DroneMech => new Vector2(30f, -360f),
+            // 左侧竖列
+            HeroMech => new Vector2(-235f, 60f),
+            EngineerMech => new Vector2(-235f, -70f),
+            DartBotMech => new Vector2(-235f, -200f),
             _ => new Vector2(150f, 30f)
         };
     }
