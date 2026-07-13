@@ -1,0 +1,38 @@
+{
+  "STORY_LAUGHMAN": "萝马人的赛季",
+
+  "LAUGHMAN_CHARACTER_EPOCH.title": "宣讲会",
+  "LAUGHMAN_CHARACTER_EPOCH.description": "起因是刷贴吧。一个帖子在骂「东北某大学 RM 队伍招笑避雷」，楼下却有人认真回：「别喷，RM 是真能学到东西。」\n作为一个想象力过剩的大学生，你盯着那条回复看了很久，脑子里已经把自己送上了赛场。\n于是招新宣讲会最后一排，投影上是往届战队的机甲——步兵扛在最前，哨兵稳稳撑住阵线，英雄一炮定乾坤，工程默默供着补给，无人机盘旋，飞镖蓄势。学长讲着它们怎么被放上场、怎么配合、怎么养、又怎么临时借去别处，你听懂了一半，热血涨了十成。\n「机械、电控、视觉、硬件，哪个方向都行——只要能上场。」\n你举起了手。那把从贴吧带出来的「招笑避雷」，就这么揣进了兜里。",
+  "LAUGHMAN_CHARACTER_EPOCH.unlockText": "赛季，开始了。",
+  "LAUGHMAN_CHARACTER_EPOCH.unlockInfo": "你翻开崭新的笔记本，在扉页写下两个字：热爱。\n后面的空白，要用一整个赛季去填。",
+
+  "LAUGHMAN_CARD_EPOCH.title": "报名·联调",
+  "LAUGHMAN_CARD_EPOCH.description": "提交报名表那天，你以为自己选的是一个方向，其实选的是一整年的作息。\n第一次联调到凌晨三点，机器人终于听懂了指令，笨拙地动了一下——然后冒烟了。\n「没事，报错才是常态。改。」\n那一刻你还不知道，这只是最轻松的一晚。",
+  "LAUGHMAN_CARD_EPOCH.unlockText": "第一批队员到位了。",
+  "LAUGHMAN_CARD_EPOCH.unlockInfo": "有人来试机械，有人盯着视觉发呆，招新表上多了几个名字。\n先把人凑齐，能不能上场，赛场说了算。",
+
+  "LAUGHMAN_HARDSHIP_EPOCH.title": "没那么美好",
+  "LAUGHMAN_HARDSHIP_EPOCH.description": "热爱扛不住连轴转。熬夜成了形态，咖啡成了燃料，进度条却永远差一点。\n有人被清退，有人自己走了。那个陪你打 ACM、陪你调机器人的朋友，最后一条消息是「我退队了，对不起」。\n实验室的灯还亮着，只是身边少了几个人。\n「想要什么，就得舍弃什么。」你第一次真的懂了这句话。",
+  "LAUGHMAN_HARDSHIP_EPOCH.unlockText": "有些人留下，有些人离开。",
+  "LAUGHMAN_HARDSHIP_EPOCH.unlockInfo": "熬到眼睛发红也不肯睡，名单上划掉一个又一个名字，集训一泡就是几个月。\n留下来的，都是把命搭进去的人。",
+
+  "LAUGHMAN_MANAGEMENT_EPOCH.title": "战队管理层",
+  "LAUGHMAN_MANAGEMENT_EPOCH.description": "熬到你成了管理层，才发现要操心的远不止代码。\n经费、场地、赛制、人心，还有排不完的项目进度——你成了半个项目经理，把甘特图画得比程序还熟，活脱脱一个「时间管理大师」。\n最现实的一课是：车闲着也是闲着，不如借出去打别的比赛，赚点钱维持运营。\n「热爱是油门，但总得有人管加油站。」",
+  "LAUGHMAN_MANAGEMENT_EPOCH.unlockText": "你开始为整个战队考虑。",
+  "LAUGHMAN_MANAGEMENT_EPOCH.unlockInfo": "改一版赛制，请一位外援，散一顿告别的饭。\n维持一支队伍，比赢一场比赛难得多。",
+
+  "LAUGHMAN_BORROWED_CARS_EPOCH.title": "车都被占用",
+  "LAUGHMAN_BORROWED_CARS_EPOCH.description": "赛季最忙的那阵，队里所有车都被占用了：主力在备赛，备用的借出去跑商演和嵌入式大赛赚经费。\n轮到你想调试自己的方案时，只剩一句「排队」。\n你在借条、日程表和别人的甩尾声里，学会了怎么把有限的车压出最大的价值——嵌入式大赛一场接一场，奖金和里程一起涨。\n「车不够，就靠调度。反正我们最不缺的就是熬夜的人。」",
+  "LAUGHMAN_BORROWED_CARS_EPOCH.unlockText": "调度，也是一种战斗力。",
+  "LAUGHMAN_BORROWED_CARS_EPOCH.unlockInfo": "一台车跑完嵌入式大赛，连夜换算法再拉去下一场；每一笔借条都写得清清楚楚。\n把每一台车都榨到极限。",
+
+  "LAUGHMAN_LEAGUE_EPOCH.title": "曼巴出去·冲击UL",
+  "LAUGHMAN_LEAGUE_EPOCH.description": "官方新规下来了：无人机不再能发射弹丸。你的无人机流一夜之间被判了半个死缓。\n「曼巴，出去。」你把最后一发弹丸打完，转头重构了整套新约无人机战术——比起接下来的硬仗，这只算个小插曲。\n然后是千辛万苦的联赛。冲 UL 还是稳 UC？进了 UC 就打不了 UL 那几个稳定捞奖的项目——每一步都是取舍。\n你选了最难走的那条。",
+  "LAUGHMAN_LEAGUE_EPOCH.unlockText": "规则在变，你也在变。",
+  "LAUGHMAN_LEAGUE_EPOCH.unlockInfo": "把最后一发弹丸打光，连夜给无人机换上新规下的活法，再一路杀进夺冠的巡游。\n被规则逼到墙角，就把墙拆了重砌。",
+
+  "LAUGHMAN_POTION_EPOCH.title": "剑指春茧",
+  "LAUGHMAN_POTION_EPOCH.description": "国赛的赛场上，对面坐着云汉交龙、华农的牛、华工的南虎……个个都是啃了几年的硬骨头。\n剑指春茧的路，前置繁琐、条件苛刻，赢的概率其实不高。你比谁都清楚。\n可你还是把七个召唤位一个个凑齐，把整个赛季的熬夜和取舍，压进最后一场。\n「大不了打不过交龙，考研考进去。」\n初心高于胜负——这是你从第一晚就写在扉页上的东西。",
+  "LAUGHMAN_POTION_EPOCH.unlockText": "无论赢没赢，你都上过场了。",
+  "LAUGHMAN_POTION_EPOCH.unlockInfo": "冰美式顶着困意，巧乐兹哄着空荡荡的胃，WD40负责让吱呀作响的车再撑一轮——熬到国赛的人，总得给自己留几样救命的。"
+}

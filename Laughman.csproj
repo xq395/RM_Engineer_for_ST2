@@ -33,6 +33,9 @@
          older NuGet 0.2.6, otherwise CustomEventModel and other BaseLib API differ and crash. -->
     <ItemGroup>
         <WorkshopBaseLib Include="$(SteamLibraryPath)/workshop/content/2868840/**/BaseLib.dll" />
+        <!-- RitsuLib runtime DLL for the current game version (0.108.0). Used only for the
+             timeline (Epoch/Story) declarative framework. -->
+        <WorkshopRitsuLib Include="$(SteamLibraryPath)/workshop/content/2868840/**/lib/0.108.0/STS2-RitsuLib.dll" />
     </ItemGroup>
 
     <ItemGroup>
@@ -42,6 +45,11 @@
             <Private>false</Private>
         </Reference>
         <PackageReference Include="Alchyr.Sts2.BaseLib" Version="*" PrivateAssets="All" Condition="'@(WorkshopBaseLib)' == ''" />
+        <!-- RitsuLib: compile-time reference only; loaded at runtime as a Workshop dependency. -->
+        <Reference Include="STS2-RitsuLib" Condition="'@(WorkshopRitsuLib)' != ''">
+            <HintPath>@(WorkshopRitsuLib)</HintPath>
+            <Private>false</Private>
+        </Reference>
         <PackageReference Include="Krafs.Publicizer" Version="2.3.0" PrivateAssets="All"/>
         <PackageReference Include="Alchyr.Sts2.ModAnalyzers" Version="*" />
         <PackageReference Include="BSchneppe.StS2.PckPacker" Version="0.1.1" PrivateAssets="All" />

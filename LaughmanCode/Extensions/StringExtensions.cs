@@ -37,6 +37,11 @@ public static class StringExtensions
         return ResPath(MainFile.ModId, "images", "relics", path);
     }
 
+    public static string PotionImagePath(this string path)
+    {
+        return ResPath(MainFile.ModId, "images", "potions", path);
+    }
+
     public static string BigRelicImagePath(this string path)
     {
         return ResPath(MainFile.ModId, "images", "relics", "big", path);

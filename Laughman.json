@@ -3,9 +3,9 @@
   "name": "RM工程师",
   "author": "xq395",
   "description": "以 RoboMaster 为主题，围绕机器人部署、队员强化与借用机制构筑的自定义角色 Demo。",
-  "version": "v0.1.4",
+  "version": "v0.2.0",
   "has_pck": true,
   "has_dll": true,
-  "dependencies": ["BaseLib"],
+  "dependencies": ["BaseLib", "STS2-RitsuLib"],
   "affects_gameplay": true
 }

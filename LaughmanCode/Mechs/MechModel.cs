@@ -148,7 +148,20 @@ public abstract class MechModel : CustomMonsterModel
                 }
             }
             var props = Creature.HasPower<PrecisionGuidancePower>() ? ValueProp.Move | ValueProp.Unblockable : ValueProp.Move;
-            await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), target, damage, props, Creature);
+            // 蜂群术士 PersonalHivePower 会在受到「强攻击」后用 dealer.Player 生成晕眩，
+            // 而机甲是玩家宠物、其 Creature.Player 为 null，导致原版空引用崩溃。
+            // 由于无法可靠地 patch 该 async 回调，这里改为：机甲打带该 power 的敌人时，
+            // 把当前力量手动折算进伤害，并以 Unpowered 发出，使其不被判定为强攻击，
+            // 从而彻底跳过晕眩生成分支（代价：仅对该敌人不额外触发晕眩）。
+            var damageThisHit = damage;
+            var propsThisHit = props;
+            if (target.HasPower<PersonalHivePower>())
+            {
+                decimal strength = Creature.GetPower<StrengthPower>()?.Amount ?? 0m;
+                damageThisHit = damage + strength;
+                propsThisHit = props | ValueProp.Unpowered;
+            }
+            await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), target, damageThisHit, propsThisHit, Creature);
         }
     }
 
