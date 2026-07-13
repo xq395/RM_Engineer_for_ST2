@@ -1,5 +1,4 @@
 using BaseLib.Abstracts;
-using System.Collections.Generic;
 using System.Linq;
 using Laughman.LaughmanCode.Extensions;
 using MegaCrit.Sts2.Core.Combat;
@@ -12,9 +11,9 @@ using MegaCrit.Sts2.Core.MonsterMoves.Intents;
 
 namespace Laughman.LaughmanCode.Mechs;
 
-// 天眼雷达（能力）：你的回合结束时，对每个敌人：
+// 天眼雷达（能力）：机甲行动前，对每个敌人：
 //  - 若其意图包含攻击：施加 Shackles 层数的 [镣铐]（DarkShackles，当回合失去等量力量）。
-//  - 否则：施加 Flanking 层数的自定义 [夹击]（受到伤害 +100%，持续到下回合）。
+//  - 否则：施加 Flanking 层数的自定义 [夹击]（本轮受到的机器人伤害 +100%）。
 //  - 基础 Shackles=2 / Flanking=0；升级 Shackles=3 / Flanking=1。
 public class TianyanRadarPower : CustomPowerModel
 {
@@ -26,14 +25,9 @@ public class TianyanRadarPower : CustomPowerModel
     public int ShacklesAmount { get; set; } = 2;
     public int FlankingAmount { get; set; }
 
-    public override async Task AfterSideTurnEnd(PlayerChoiceContext choiceContext, CombatSide side, IEnumerable<Creature> participants)
+    public async Task PrepareMechVolley(PlayerChoiceContext choiceContext, ICombatState combatState)
     {
-        if (side != Owner.Side || Owner.IsDead)
-        {
-            return;
-        }
-        var combatState = Owner.CombatState;
-        if (combatState == null || CombatManager.Instance == null || CombatManager.Instance.IsEnding)
+        if (Owner.IsDead || CombatManager.Instance == null || CombatManager.Instance.IsEnding)
         {
             return;
         }

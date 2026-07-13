@@ -5,7 +5,7 @@ using MegaCrit.Sts2.Core.MonsterMoves.Intents;
 
 namespace Laughman.LaughmanCode.Mechs;
 
-// 步兵机甲：均衡坦克，拥有屏卫。每回合攻击随机敌人 + 给玩家格挡。
+// 步兵机甲：前线屏卫。每回合攻击随机敌人 + 给自己格挡，补充自身承伤池。
 public class InfantryMech : MechModel, IRevivableMech
 {
     private static int AttackDamage => WeakHelper.V(4, 6);
@@ -16,7 +16,7 @@ public class InfantryMech : MechModel, IRevivableMech
     public override async Task PerformTurn(Player owner, ICombatState combatState)
     {
         await AttackRandomEnemy(owner, combatState, AttackDamage);
-        await GivePlayerBlock(owner, BlockPerTurn);
+        await GiveSelfBlock(BlockPerTurn);
     }
 
     public override void RefreshIntent(Player owner, ICombatState combatState)

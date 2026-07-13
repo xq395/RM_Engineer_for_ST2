@@ -7,7 +7,8 @@ using MegaCrit.Sts2.Core.MonsterMoves.Intents;
 
 namespace Laughman.LaughmanCode.Mechs;
 
-// 哨兵机甲：专职肉盾，拥有屏卫。每回合给自己高格挡（可再生的吸收池）+ 小攻击。
+// 哨兵机甲：守家支援，拥有屏卫。普通模式每回合给玩家格挡 + 小攻击。
+// AI 哨兵能够单走，仍使用原有的自格挡/小陀螺或多段攻击逻辑。
 public class SentinelMech : MechModel, IRevivableMech
 {
     private static int SelfBlock => WeakHelper.V(5, 7);
@@ -38,7 +39,7 @@ public class SentinelMech : MechModel, IRevivableMech
             return;
         }
 
-        await GiveSelfBlock(SelfBlock);
+        await GivePlayerBlock(owner, SelfBlock);
         await AttackRandomEnemy(owner, combatState, AttackDamage);
     }
 

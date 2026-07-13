@@ -571,10 +571,20 @@ public class MechCooldown : LaughmanCard
     {
         await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, p);
         if (!await BorrowUtils.TryBorrow(c, Owner, 1)) return;
-        var discard = PileType.Discard.GetPile(Owner).Cards;
-        var prefs = new CardSelectorPrefs(SelectionScreenPrompt, 0, DynamicVars["Cards"].IntValue);
-        var selected = await CardSelectCmd.FromSimpleGrid(c, discard, Owner, prefs);
-        await CardPileCmd.Add(selected, PileType.Draw, CardPilePosition.Top, this);
+        for (int i = 0; i < DynamicVars["Cards"].IntValue; i++)
+        {
+            var discard = PileType.Discard.GetPile(Owner);
+            if (discard.Cards.Count == 0) break;
+
+            // 完全复用原版「宇宙冷漠」的单选流程；多张效果通过重复单选实现，
+            // 避免弃牌堆网格的多选模式在确认后无法正常关闭。
+            var selected = (await CardSelectCmd.FromSimpleGrid(
+                c, discard.Cards, Owner, new CardSelectorPrefs(SelectionScreenPrompt, 1))).FirstOrDefault();
+            if (selected?.Pile?.Type is PileType.Draw or PileType.Discard)
+            {
+                await CardPileCmd.Add(selected, PileType.Draw, CardPilePosition.Top);
+            }
+        }
     }
     protected override void OnUpgrade() { DynamicVars.Block.UpgradeValueBy(2m); DynamicVars["Cards"].UpgradeValueBy(1m); }
 }

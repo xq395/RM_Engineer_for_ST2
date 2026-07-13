@@ -79,11 +79,11 @@ public class InterferenceTest : LaughmanCard
 [Pool(typeof(LaughmanCardPool))]
 public class RepairChecklist : LaughmanCard
 {
-    protected override IEnumerable<DynamicVar> CanonicalVars => new DynamicVar[] { new DynamicVar("Heal", 8m), new BlockVar(6m, ValueProp.Move) };
+    protected override IEnumerable<DynamicVar> CanonicalVars => new DynamicVar[] { new BlockVar(6m, ValueProp.Move) };
     public RepairChecklist() : base(1, CardType.Skill, CardRarity.Common, TargetType.Self) { }
     public override bool GainsBlock => true;
-    protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p) { var target = TeamMemberUtils.RandomMech(Owner); if (target != null) await CreatureCmd.Heal(target, DynamicVars["Heal"].IntValue); await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, p); }
-    protected override void OnUpgrade() { DynamicVars["Heal"].UpgradeValueBy(4m); DynamicVars.Block.UpgradeValueBy(3m); }
+    protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p) { if (TeamMemberUtils.Amount<MechanicalMemberPower>(Owner) > 0) await TeamMemberUtils.Trigger(Owner, TeamMemberType.Mechanical, 1, c); await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, p); }
+    protected override void OnUpgrade() => DynamicVars.Block.UpgradeValueBy(3m);
 }
 
 [Pool(typeof(LaughmanCardPool))]
@@ -352,6 +352,8 @@ public class LoyalGuard : LaughmanCard
         {
             await CreatureCmd.GainMaxHp(infantry, 6m);
             await PowerCmd.Apply<PlatingPower>(c, Owner.Creature, 1m, Owner.Creature, this);
+            await PowerCmd.Apply<StrengthPower>(c, infantry, 1m, Owner.Creature, this);
+            await PowerCmd.Apply<DexterityPower>(c, infantry, 1m, Owner.Creature, this);
         }
     }
     protected override void OnUpgrade() => DynamicVars["Extra"].UpgradeValueBy(1m);

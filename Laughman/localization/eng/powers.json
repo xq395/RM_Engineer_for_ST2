@@ -57,12 +57,12 @@
   "LAUGHMAN-FOCUS_FIRE_POWER.description": "被你的机器人优先攻击，且受到来自机器人的每段伤害 +1。每个你的回合开始时 -1，归零移除。",
   "LAUGHMAN-FOCUS_FIRE_POWER.smartDescription": "被你的机器人优先攻击，且受到来自机器人的每段伤害 +1。剩余 {Amount} 回合。",
   "LAUGHMAN-SUSTAINED_FLANKING_POWER.title": "夹击",
-  "LAUGHMAN-SUSTAINED_FLANKING_POWER.description": "受到的伤害 +100%。持续到你的下个回合。",
-  "LAUGHMAN-SUSTAINED_FLANKING_POWER.smartDescription": "受到的伤害 +100%。剩余 {Amount} 回合。",
+  "LAUGHMAN-SUSTAINED_FLANKING_POWER.description": "本轮受到的机器人攻击伤害 +100%。机器人全部行动后移除。",
+  "LAUGHMAN-SUSTAINED_FLANKING_POWER.smartDescription": "本轮受到的机器人攻击伤害 +100%。",
   "LAUGHMAN-PRECISION_ENGINEERING_POWER.title": "精密工程",
   "LAUGHMAN-PRECISION_ENGINEERING_POWER.description": "只要你有存活的工程机甲，你打出的 X 费牌的 X 值增加。",
   "LAUGHMAN-PRECISION_ENGINEERING_POWER.smartDescription": "只要你有存活的工程机甲，你打出的 X 费牌的 X 值增加。",
   "LAUGHMAN-TIANYAN_RADAR_POWER.title": "天眼雷达",
-  "LAUGHMAN-TIANYAN_RADAR_POWER.description": "你的回合结束时，意图为攻击的敌人获得 [gold]镣铐[/gold]，否则获得 [gold]夹击[/gold]。",
-  "LAUGHMAN-TIANYAN_RADAR_POWER.smartDescription": "你的回合结束时，意图为攻击的敌人获得 [gold]镣铐[/gold]，否则获得 [gold]夹击[/gold]。"
+  "LAUGHMAN-TIANYAN_RADAR_POWER.description": "机器人行动前，意图为攻击的敌人获得 [gold]镣铐[/gold]，否则在本轮机器人齐射中获得 [gold]夹击[/gold]。",
+  "LAUGHMAN-TIANYAN_RADAR_POWER.smartDescription": "机器人行动前，意图为攻击的敌人获得 [gold]镣铐[/gold]，否则在本轮机器人齐射中获得 [gold]夹击[/gold]。"
 }

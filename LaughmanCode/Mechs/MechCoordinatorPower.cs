@@ -55,8 +55,17 @@ public class MechCoordinatorPower : CustomPowerModel
             return;
         }
 
-        // 复制一份当前存活的机器人列表（PerformTurn 中可能击杀敌人，但不会移除自己）。
-        var mechs = GetMechs(owner);
+        // 雷达必须先读取敌方意图并施加本轮镣铐/夹击，随后所有机甲才能吃到夹击收益。
+        if (owner.Creature.GetPower<TianyanRadarPower>() is { } radar)
+        {
+            await radar.PrepareMechVolley(choiceContext, combatState);
+        }
+
+        // 信火一体飞镖在蓄力回合先施加集火，后续机甲才能吃到优先选敌与每段 +1 伤害。
+        // 普通飞镖不改变召唤顺序；OrderBy 是稳定排序，其余机甲仍按原部署顺序行动。
+        var mechs = GetMechs(owner)
+            .OrderBy(mech => mech is DartBotMech { MarksWhileCharging: true } ? 0 : 1)
+            .ToList();
         foreach (var mech in mechs)
         {
             if (mech.Creature.IsDead)
@@ -128,6 +137,15 @@ public class MechCoordinatorPower : CustomPowerModel
             if (mech.Creature.GetPower<DarkShacklesPower>() is { } shackles)
             {
                 await PowerCmd.Remove(shackles);
+            }
+        }
+
+        // 夹击只服务本轮机甲齐射，避免残留到玩家攻击或错误地在敌方回合计时。
+        foreach (var enemy in combatState.HittableEnemies.Where(e => !e.IsDead).ToList())
+        {
+            if (enemy.GetPower<SustainedFlankingPower>() is { } flanking)
+            {
+                await PowerCmd.Remove(flanking);
             }
         }
     }

@@ -9,13 +9,12 @@ using MegaCrit.Sts2.Core.GameActions;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
-using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.ValueProps;
 
 namespace Laughman.LaughmanCode.Cards;
 
-// C2 装甲展开：给一个单位格挡；若其带屏卫，再获得覆甲。
-// 自动选择目标：优先带屏卫的机器人（给覆甲收益最高），否则给玩家。
+// C2 装甲展开：优先给一台屏卫机器人格挡，并触发一次已有的电控队员效果。
+// 自动选择目标：优先带屏卫的机器人，否则给玩家。
 // 原版 TargetType.AnyAlly 不把玩家宠物算作“队友”，不能直接用来选机器人。
 [Pool(typeof(LaughmanCardPool))]
 public class ArmorDeploy : LaughmanCard
@@ -24,8 +23,7 @@ public class ArmorDeploy : LaughmanCard
 
     protected override IEnumerable<DynamicVar> CanonicalVars => new DynamicVar[]
     {
-        new BlockVar(6m, ValueProp.Move),
-        new DynamicVar("PlatedArmor", 3m)
+        new BlockVar(6m, ValueProp.Move)
     };
 
     public ArmorDeploy() : base(1, CardType.Skill, CardRarity.Common, TargetType.Self) { }
@@ -40,16 +38,14 @@ public class ArmorDeploy : LaughmanCard
 
         await CreatureCmd.GainBlock(target, DynamicVars.Block, cardPlay);
 
-        if (target.Monster is MechModel mech && mech.IsGuard)
+        if (TeamMemberUtils.Amount<ElectricalMemberPower>(Owner) > 0)
         {
-            await PowerCmd.Apply<PlatingPower>(
-                choiceContext, target, DynamicVars["PlatedArmor"].BaseValue, Owner.Creature, this);
+            await TeamMemberUtils.Trigger(Owner, TeamMemberType.Electrical, 1, choiceContext);
         }
     }
 
     protected override void OnUpgrade()
     {
         DynamicVars.Block.UpgradeValueBy(3m);
-        DynamicVars["PlatedArmor"].UpgradeValueBy(1m);
     }
 }
