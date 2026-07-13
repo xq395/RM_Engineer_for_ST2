@@ -39,6 +39,7 @@ RoboMaster 是一项以机器人对抗为核心的工程竞技赛事。参赛队
 
 - 1 名可游玩的自定义角色，以及完整的初始牌组、卡池和升级逻辑
 - 80+ 张已实现卡牌，包含常规卡牌、衍生牌、特殊牌和事件相关卡牌
+- 83 张专属卡牌插画与 3 个专属药水图标
 - 8 类机器人单位及其行动、意图、受伤、强化和协同逻辑
 - 10 件遗物，包含初始遗物、角色遗物及事件遗物
 - 2 个自定义事件，以及与先古之民交互的特殊内容
@@ -49,7 +50,7 @@ RoboMaster 是一项以机器人对抗为核心的工程竞技赛事。参赛队
 
 这是一个用于公开测试核心玩法的早期 Demo，并非完成版本：
 
-- 暂无正式美术资源。角色、卡牌、机器人、遗物和事件目前大量使用占位图，也没有定制动画和完整视觉表现。
+- 大部分卡牌已拥有专属插画；少量卡牌、角色、机器人、遗物和事件仍使用占位图，且尚无定制动画和完整视觉表现。
 - 仍可能存在程序错误、显示问题、流程卡死、存档兼容问题，或与其他 Mod 冲突的情况。
 - 数值平衡尚未经过足够规模的测试。部分构筑在成长后可能达到远高于原版角色的强度；建议追求挑战的玩家搭配提高游戏难度的 Mod，或主动采用更高难度规则。
 - 卡牌、遗物、事件出现率及不同流派之间的强度差异仍可能大幅调整，后续版本不保证与旧存档兼容。
@@ -95,6 +96,7 @@ The current Demo includes:
 
 - 1 playable custom character with a complete starting deck, card pool, and card upgrades
 - 80+ implemented cards, including collectible, generated, special, and event-related cards
+- 83 custom card illustrations and 3 custom potion icons
 - 8 robot unit types with action, intent, damage, upgrade, and coordination logic
 - 10 relics, including starting, character-specific, and event relics
 - 2 custom events plus special interactions with Ancients
@@ -105,7 +107,7 @@ The current Demo includes:
 
 This is an early public Demo intended to test the core gameplay, not a finished release:
 
-- Final art is not available yet. The character, cards, robots, relics, and events currently rely heavily on placeholder images, with no custom animation or complete visual presentation.
+- Most cards now have custom illustrations. A few cards, the character, robots, relics, and events still use placeholder art, and custom animation is not yet available.
 - Bugs, display issues, progression blockers, save compatibility problems, and conflicts with other mods may still occur.
 - Balance has not been tested at sufficient scale. Some builds can reach power levels far above the base-game characters; players looking for a challenge may want to use a difficulty-increasing mod or impose higher-difficulty rules.
 - Card and relic balance, event frequency, and archetype strength may change substantially. Future versions are not guaranteed to remain compatible with old saves.
