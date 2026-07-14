@@ -262,7 +262,7 @@
 - 效果：[gold]归队[/gold] {Return}。<br>抽 {Draw} 张牌。
 - 数值定义：`CanonicalVars => new[] { new DynamicVar("Return", 1m), new DynamicVar("Draw", 1m) };`
 - 关键词：`-`
-- 升级实现：`OnUpgrade() => EnergyCost.UpgradeBy(-1);`
+- 升级实现：`OnUpgrade() => DynamicVars["Return"].UpgradeValueBy(1m);`
 - 代码：`LaughmanCode/Cards/Batch3Cards.cs:456`
 - 普通卡图：`Laughman/images/card_portraits/recall_notice.png`
 - 大图：`Laughman/images/card_portraits/big/recall_notice.png`
@@ -908,7 +908,7 @@
 - 类型：攻击 / `Attack`
 - 费用：`0`
 - 目标：单个敌人 / `AnyEnemy`
-- 效果：失去 1 点生命，造成 {Damage:diff()} 点伤害，随机一辆吃力量的机器人获得 1 点 [gold]力量[/gold]。<br>[gold]借用[/gold] 1：重复一次。
+- 效果：获得 1 点能量。失去 1 点生命，造成 {Damage:diff()} 点伤害，随机一辆吃力量的机器人获得 1 点 [gold]力量[/gold]。<br>[gold]借用[/gold] 1：重复一次。
 - 数值定义：`CanonicalVars => new[] { new DamageVar(6m, ValueProp.Move) };`
 - 关键词：`-`
 - 升级实现：`OnUpgrade() => DynamicVars.Damage.UpgradeValueBy(3m);`
@@ -1074,7 +1074,7 @@
 - 费用：`2`
 - 目标：单个敌人 / `AnyEnemy`
 - 效果：造成 {Damage:diff()} 点伤害。<br>[gold]借用[/gold] 1 台步兵：改为造成双倍伤害，再额外增加被借步兵的力量。该步兵受到 {InfantryDamage} 点伤害。
-- 数值定义：`CanonicalVars => new DynamicVar[] { new DamageVar(16m, ValueProp.Move), new DynamicVar("InfantryDamage", 20m) };`
+- 数值定义：`CanonicalVars => new DynamicVar[] { new DamageVar(16m, ValueProp.Move), new DynamicVar("InfantryDamage", 13m) };`
 - 关键词：`CanonicalKeywords => new[] { CardKeyword.Exhaust };`
 - 升级实现：`OnUpgrade() => DynamicVars.Damage.UpgradeValueBy(6m);`
 - 代码：`LaughmanCode/Cards/Batch3Cards.cs:431`
@@ -1163,7 +1163,7 @@
 - 类型：能力 / `Power`
 - 费用：`2`
 - 目标：自身 / `Self`
-- 效果：每当你借用一台机器人，抽 1 张牌，获得 {Block:diff()} 点 [gold]格挡[/gold]，并 [gold]归队[/gold] 1。
+- 效果：每台机器人每回合第一次被 [gold]借用[/gold] 时，抽 1 张牌，获得 {Block:diff()} 点 [gold]格挡[/gold]，并 [gold]归队[/gold] 1。
 - 数值定义：`CanonicalVars => new[] { new BlockVar(1m, ValueProp.Move) };`
 - 关键词：`-`
 - 升级实现：`OnUpgrade() => DynamicVars.Block.UpgradeValueBy(2m);`
@@ -1311,7 +1311,7 @@
 - 大图：`Laughman/images/card_portraits/big/mechanical_training.png`
 - 美术构图备注：待填写
 
-### 视觉/硬件（SOFTWARE_TRAINING_CHOICE）
+### 视觉or硬件（SOFTWARE_TRAINING_CHOICE）
 
 - 类名：`SoftwareTrainingChoice`
 - 类型：技能 / `Skill`

@@ -233,31 +233,46 @@ public class MechCoordinatorPower : CustomPowerModel
 
             var guard = mech.Creature;
 
-            // The guard chain manually transfers post-player-block damage, bypassing the normal
-            // damage pipeline. Apply robot-owned mitigation before its block and HP are consumed.
-            remaining *= IncomingDamageMultiplier(guard);
+            // Keep remaining in the attack's original damage units. Mitigation increases how much
+            // original damage this guard can absorb, but must not protect later guards or the player.
+            decimal multiplier = IncomingDamageMultiplier(guard);
+            int effectiveDamage = (int)Math.Floor(remaining * multiplier);
+            if (effectiveDamage <= 0)
+            {
+                remaining = 0m;
+                break;
+            }
+            int effectiveAbsorbed = 0;
 
             // 先扣屏卫格挡。
             if (guard.Block > 0)
             {
-                decimal absorbed = Math.Min(guard.Block, remaining);
+                int absorbed = Math.Min(guard.Block, effectiveDamage);
                 guard.LoseBlockInternal(absorbed);
-                remaining -= absorbed;
-                if (remaining <= 0m)
+                effectiveDamage -= absorbed;
+                effectiveAbsorbed += absorbed;
+                if (effectiveDamage <= 0)
                 {
+                    remaining = 0m;
                     break;
                 }
             }
 
-            // 再扣屏卫血量（不超过其当前血量；击破后溢出继续给下一个屏卫）。
+            // 再扣屏卫血量。屏卫存活即拦下整次攻击；死亡时将它实际吸收的有效伤害
+            // 除以自身减伤倍率，换算成从原始伤害池中消耗的数值。
             if (guard.CurrentHp > 0)
             {
-                decimal toHp = Math.Min(guard.CurrentHp, remaining);
-                var result = guard.LoseHpInternal(toHp, props);
-                remaining -= result.UnblockedDamage;
+                var result = guard.LoseHpInternal(effectiveDamage, props);
+                effectiveAbsorbed += result.UnblockedDamage;
                 if (result.WasTargetKilled)
                 {
                     _pendingKills.Add(guard);
+                    remaining = Math.Max(0m, remaining - effectiveAbsorbed / multiplier);
+                }
+                else
+                {
+                    remaining = 0m;
+                    break;
                 }
             }
         }

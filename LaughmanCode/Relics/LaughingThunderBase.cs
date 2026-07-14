@@ -11,7 +11,9 @@ using MegaCrit.Sts2.Core.Localization;
 using MegaCrit.Sts2.Core.Map;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Cards;
+using MegaCrit.Sts2.Core.Models.Monsters;
 using MegaCrit.Sts2.Core.Models.Powers;
+using MegaCrit.Sts2.Core.Nodes.Vfx;
 using MegaCrit.Sts2.Core.Rooms;
 
 namespace Laughman.LaughmanCode.Relics;
@@ -73,6 +75,15 @@ public abstract class LaughingThunderBase : LaughmanRelic
         PlayerChoiceContext choiceContext = new BlockingPlayerChoiceContext();
         await PowerCmd.Apply<StrengthPower>(choiceContext, Owner.Creature, StatModifier, null, null);
         await PowerCmd.Apply<DexterityPower>(choiceContext, Owner.Creature, StatModifier, null, null);
+
+        if (Owner.Creature.CombatState?.Enemies.Any(enemy => enemy.Monster is Fabricator) == true)
+        {
+            TalkCmd.Play(
+                new LocString("characters", "LAUGHMAN-LAUGHMAN.banter.FABRICATOR.opening"),
+                Owner.Creature,
+                VfxColor.White,
+                VfxDuration.VeryLong);
+        }
     }
 
     public override Task AfterRoomEntered(AbstractRoom room)

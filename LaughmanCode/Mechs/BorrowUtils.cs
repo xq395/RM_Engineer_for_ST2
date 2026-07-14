@@ -52,7 +52,7 @@ public static class BorrowUtils
         // 借用成功后触发「赛制改革」payoff。
         if (owner.Creature.HasPower<RuleOverhaulPower>())
         {
-            await owner.Creature.GetPower<RuleOverhaulPower>()!.OnBorrow(context, owner);
+            await owner.Creature.GetPower<RuleOverhaulPower>()!.OnBorrow(context, owner, mech);
         }
 
         // 借用成功后触发「借调防线」遗物（每场首次借用得格挡）。

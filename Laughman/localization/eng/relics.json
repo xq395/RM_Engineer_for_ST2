@@ -1,9 +1,9 @@
 {
   "LAUGHMAN-LAUGHING_THUNDER.title": "招笑避雷",
-  "LAUGHMAN-LAUGHING_THUNDER.description": "战斗开始时获得 #y力量 -1，#y敏捷 -1。\n每次到达 #y先古之民 后，在下场战斗胜利后选择并变化一张 #y攻击牌 和一张 #y防御牌 （可跳过）。\n最多触发 3 次。",
+  "LAUGHMAN-LAUGHING_THUNDER.description": "#y力量 -1，#y敏捷 -1。每层第一次战斗后，选择并变化一张 #y攻击牌 和一张 #y技能牌。",
   "LAUGHMAN-LAUGHING_THUNDER.flavor": "在这里，99%的人被气笑。",
   "LAUGHMAN-ENGINEER_WISH.title": "工程师之愿",
-  "LAUGHMAN-ENGINEER_WISH.description": "战斗开始时获得 #y力量 和 #y敏捷，数值为 -1 加上已到达的 #y先古之民 次数（最多 +2）。\n每次到达 #y先古之民 后，在下场战斗胜利后选择并变化一张 #y攻击牌 和一张 #y防御牌 （可跳过）。\n最多触发 3 次。",
+  "LAUGHMAN-ENGINEER_WISH.description": "每层开始时，#y力量 和 #y敏捷 永久 +1。",
   "LAUGHMAN-ENGINEER_WISH.flavor": "初心高于一切。",
   "LAUGHMAN-LEASE_CONTRACT.title": "租借合同",
   "LAUGHMAN-LEASE_CONTRACT.description": "回合开始时，若场上存在借用中的机器人，则获得 3 金币。每场战斗至多 24。",

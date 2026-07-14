@@ -21,7 +21,7 @@ public class RampJump : LaughmanCard
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         var alive = Owner.Creature.Pets
-            .Where(p => p.Monster is InfantryMech or SentinelMech or HeroMech && !p.IsDead)
+            .Where(p => !p.IsDead && (p.Monster is InfantryMech or SentinelMech or HeroMech))
             .ToList();
         if (alive.Count == 0)
         {

@@ -430,7 +430,7 @@ public class RuleOverhaul : LaughmanCard
 [Pool(typeof(LaughmanCardPool))]
 public class MvpOfTheMatch : LaughmanCard
 {
-    protected override IEnumerable<DynamicVar> CanonicalVars => new DynamicVar[] { new DamageVar(16m, ValueProp.Move), new DynamicVar("InfantryDamage", 20m) };
+    protected override IEnumerable<DynamicVar> CanonicalVars => new DynamicVar[] { new DamageVar(16m, ValueProp.Move), new DynamicVar("InfantryDamage", 13m) };
     public override IEnumerable<CardKeyword> CanonicalKeywords => new[] { CardKeyword.Exhaust };
     public MvpOfTheMatch() : base(2, CardType.Attack, CardRarity.Rare, TargetType.AnyEnemy) { }
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
@@ -462,7 +462,7 @@ public class RecallNotice : LaughmanCard
         await BorrowUtils.TryReturn(c, Owner, DynamicVars["Return"].IntValue);
         await CardPileCmd.Draw(c, DynamicVars["Draw"].IntValue, Owner);
     }
-    protected override void OnUpgrade() => EnergyCost.UpgradeBy(-1);
+    protected override void OnUpgrade() => DynamicVars["Return"].UpgradeValueBy(1m);
 }
 
 // U26 紧急召回：深度归队并让目标获得小陀螺。
