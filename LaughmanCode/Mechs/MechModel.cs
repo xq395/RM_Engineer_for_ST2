@@ -131,7 +131,12 @@ public abstract class MechModel : CustomMonsterModel
 
     // 攻击一个存活敌人，造成 damage 点伤害（powered attack，吃力量/易伤）。
     // 优先攻击被「集火指令」标记的敌人。
-    protected async Task AttackRandomEnemy(Player owner, ICombatState combatState, decimal damage, int hits = 1)
+    protected async Task AttackRandomEnemy(
+        Player owner,
+        ICombatState combatState,
+        decimal damage,
+        int hits = 1,
+        bool unblockable = false)
     {
         var vigor = Creature.GetPower<VigorPower>();
         damage += vigor?.Amount ?? 0m;
@@ -150,7 +155,9 @@ public abstract class MechModel : CustomMonsterModel
                     return;
                 }
             }
-            var props = Creature.HasPower<PrecisionGuidancePower>() ? ValueProp.Move | ValueProp.Unblockable : ValueProp.Move;
+            var props = unblockable || Creature.GetPower<PrecisionGuidancePower>() is { IgnoresBlock: true }
+                ? ValueProp.Move | ValueProp.Unblockable
+                : ValueProp.Move;
             // PersonalHivePowerPatch maps mech pet dealers back to their player owner, so this can
             // remain a powered attack and still receive Ramp Jump, guidance and focus-fire bonuses.
             await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), target, damage, props, Creature);

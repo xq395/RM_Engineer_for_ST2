@@ -15,14 +15,17 @@ namespace Laughman.LaughmanCode.Cards;
 
 // U8 买活：花费 10 金币，使一台阵亡的步兵/英雄/哨兵复活。行动正常走，复活时获得一层小陀螺。
 [Pool(typeof(LaughmanCardPool))]
-public class PayToRespawn : LaughmanCard
+public class PayToRespawn : LaughmanCard, IOwnedMechTargetingCard
 {
+    public OwnedMechTargetMode MechTargetMode => OwnedMechTargetMode.DeadRevivable;
     private const int GoldCost = 6;
 
     protected override IEnumerable<DynamicVar> CanonicalVars =>
         new[] { new DynamicVar("ReviveHp", 10m) };
 
-    public PayToRespawn() : base(1, CardType.Skill, CardRarity.Uncommon, TargetType.Self) { }
+    public PayToRespawn() : base(1, CardType.Skill, CardRarity.Uncommon, TargetType.AnyAlly) { }
+    protected override bool IsPlayable =>
+        Owner.Gold >= GoldCost && Owner.Creature.Pets.Any(p => p.Monster is IRevivableMech && p.IsDead);
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
@@ -33,8 +36,7 @@ public class PayToRespawn : LaughmanCard
         }
 
         // 找一台阵亡且可买活的机器人（仍留在宠物列表中，因协调器保留了它们）。
-        Creature? dead = Owner.Creature.Pets
-            .FirstOrDefault(p => p.Monster is IRevivableMech && p.IsDead);
+        Creature? dead = cardPlay.Target;
         if (dead == null)
         {
             return;

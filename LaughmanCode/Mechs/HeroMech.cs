@@ -61,7 +61,11 @@ public class HeroMech : MechModel, IRevivableMech
             else
             {
                 // 吊射：力量四倍。
-                await AttackRandomEnemy(owner, combatState, LobFireDamage + BonusStrengthDamage(Laughman.LaughmanCode.Config.WeakHelper.V(3m, 4m)));
+                await AttackRandomEnemy(
+                    owner,
+                    combatState,
+                    LobFireDamage + BonusStrengthDamage(Laughman.LaughmanCode.Config.WeakHelper.V(3m, 4m)),
+                    unblockable: true);
                 _resting = true;
             }
             return;

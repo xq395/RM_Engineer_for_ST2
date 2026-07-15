@@ -16,6 +16,7 @@ public class PrecisionGuidancePower : CustomPowerModel
 
     public int BonusDamage { get; set; }
     public decimal DamageMultiplier { get; set; } = 1m;
+    public bool IgnoresBlock { get; set; }
 
     public override decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
     {

@@ -73,38 +73,13 @@ public class MechCoordinatorPower : CustomPowerModel
                 continue;
             }
 
-            // 借用中：本回合离场，不行动。借用回合由 BorrowedPower 在回合开始时自动递减。
-            if (mech.IsBorrowed)
-            {
-                if (!mech.Creature.IsDead)
-                {
-                    mech.ShowIntent(new SleepIntent());
-                }
-                continue;
-            }
-
-            // 运维金币。
-            if (mech.UpkeepGold > 0)
-            {
-                if (owner.Gold >= mech.UpkeepGold)
-                {
-                    await PlayerCmd.LoseGold(mech.UpkeepGold, owner, GoldLossType.Spent);
-                }
-                else
-                {
-                    // 金币不足：本回合晕眩，不行动，意图显示晕眩。
-                    await CreatureCmd.Stun(mech.Creature, (string?)null);
-                    continue;
-                }
-            }
-
-            await mech.PerformTurn(owner, combatState);
+            await TryPerformAction(choiceContext, owner, combatState, mech);
 
             // 覆甲结算：机甲是 pet，其身上的原版 PlatingPower 收不到回合 hook
             // （IterateHookListeners 只含正式参战单位的 powers，不含 pet 的），所以覆甲既不会
             // 自己转成格挡、也不会自己递减。这里由协调器在机甲行动后手动补上，还原原版覆甲语义：
             // 每回合给等于当前层数的格挡，然后层数 -1（衰减）。
-            if (!mech.Creature.IsDead)
+            if (!mech.Creature.IsDead && !mech.IsBorrowed)
             {
                 var platingPower = mech.Creature.GetPower<PlatingPower>();
                 int plating = platingPower?.Amount ?? 0;
@@ -115,14 +90,6 @@ public class MechCoordinatorPower : CustomPowerModel
                 }
             }
 
-            if (!mech.Creature.IsDead && mech.Creature.HasPower<ChampionFormPower>())
-            {
-                await TeamMemberUtils.TriggerRandom(owner, choiceContext);
-            }
-            if (!mech.Creature.IsDead)
-            {
-                mech.RefreshIntent(owner, combatState);
-            }
         }
 
         // Pet 不会自动收到正式参战单位的临时 Power 清理 hook。
@@ -235,7 +202,7 @@ public class MechCoordinatorPower : CustomPowerModel
 
             // Keep remaining in the attack's original damage units. Mitigation increases how much
             // original damage this guard can absorb, but must not protect later guards or the player.
-            decimal multiplier = IncomingDamageMultiplier(guard);
+            decimal multiplier = IncomingDamageMultiplier(owner, guard);
             int effectiveDamage = (int)Math.Floor(remaining * multiplier);
             if (effectiveDamage <= 0)
             {
@@ -291,7 +258,7 @@ public class MechCoordinatorPower : CustomPowerModel
                 continue;
             }
             decimal share = mech.IsFlying ? Math.Floor(remaining / 2m) : remaining;
-            share *= IncomingDamageMultiplier(mech.Creature);
+            share *= IncomingDamageMultiplier(owner, mech.Creature);
             if (share <= 0m)
             {
                 continue;
@@ -337,7 +304,51 @@ public class MechCoordinatorPower : CustomPowerModel
 
     private readonly List<Creature> _pendingKills = new();
 
-    private static decimal IncomingDamageMultiplier(Creature mech)
+    public static async Task<bool> TryPerformAction(
+        PlayerChoiceContext choiceContext,
+        Player owner,
+        ICombatState combatState,
+        MechModel mech)
+    {
+        if (mech.Creature.IsDead)
+        {
+            return false;
+        }
+        if (mech.IsBorrowed)
+        {
+            mech.ShowIntent(new SleepIntent());
+            return false;
+        }
+        if (mech.Creature.IsStunned)
+        {
+            // Pets are manually driven, so consume the stunned move by restoring their normal intent.
+            mech.RefreshIntent(owner, combatState);
+            return false;
+        }
+        if (mech.UpkeepGold > 0)
+        {
+            if (owner.Gold < mech.UpkeepGold)
+            {
+                // Upkeep failure skips this action; it must not also consume the next action.
+                mech.ShowIntent(new StunIntent());
+                return false;
+            }
+            await PlayerCmd.LoseGold(mech.UpkeepGold, owner, GoldLossType.Spent);
+        }
+
+        await mech.PerformTurn(owner, combatState);
+        if (!mech.Creature.IsDead && mech.Creature.HasPower<ChampionFormPower>())
+        {
+            await TeamMemberUtils.TriggerRandom(owner, choiceContext);
+        }
+        if (!mech.Creature.IsDead)
+        {
+            mech.RefreshIntent(owner, combatState);
+        }
+        return true;
+    }
+
+    private static decimal IncomingDamageMultiplier(Player owner, Creature mech)
     {
         decimal multiplier = 1m;
         if (mech.HasPower<GyroSpinPower>())
@@ -347,6 +358,10 @@ public class MechCoordinatorPower : CustomPowerModel
         if (mech.HasPower<RampJumpPower>())
         {
             multiplier *= 0.5m;
+        }
+        if (owner.Creature.GetPower<ExchangeMiningPower>() is { } exchange)
+        {
+            multiplier *= ExchangeMiningPower.DamageMultiplierForAmount(exchange.Amount);
         }
         return multiplier;
     }

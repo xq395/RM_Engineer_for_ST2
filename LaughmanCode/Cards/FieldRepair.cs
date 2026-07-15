@@ -9,10 +9,11 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.ValueProps;
+using Laughman.LaughmanCode.Config;
 
 namespace Laughman.LaughmanCode.Cards;
 
-// U6 现场维修：治疗你所有机器人 7 点，获得 4 点格挡。
+// U6 现场维修：1 费治疗所有机器人，并获得格挡。
 [Pool(typeof(LaughmanCardPool))]
 public class FieldRepair : LaughmanCard
 {
@@ -20,11 +21,11 @@ public class FieldRepair : LaughmanCard
 
     protected override IEnumerable<DynamicVar> CanonicalVars => new DynamicVar[]
     {
-        new DynamicVar("HealAmount", 7m),
+        new DynamicVar("HealAmount", WeakHelper.V(5m, 7m)),
         new BlockVar(4m, ValueProp.Move)
     };
 
-    public FieldRepair() : base(0, CardType.Skill, CardRarity.Uncommon, TargetType.Self) { }
+    public FieldRepair() : base(1, CardType.Skill, CardRarity.Uncommon, TargetType.Self) { }
 
     public override bool GainsBlock => true;
 
@@ -40,7 +41,7 @@ public class FieldRepair : LaughmanCard
 
     protected override void OnUpgrade()
     {
-        DynamicVars["HealAmount"].UpgradeValueBy(3m);
+        DynamicVars["HealAmount"].UpgradeValueBy(WeakHelper.V(2m, 3m));
         DynamicVars.Block.UpgradeValueBy(2m);
     }
 }

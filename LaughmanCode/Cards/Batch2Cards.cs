@@ -115,10 +115,20 @@ public class InfantryNo4 : LaughmanCard
 [Pool(typeof(LaughmanCardPool))]
 public class PreMatchCalibration : LaughmanCard
 {
+    protected override IEnumerable<DynamicVar> CanonicalVars => new[] { new BlockVar(8m, ValueProp.Move) };
     public override IEnumerable<CardKeyword> CanonicalKeywords => new[] { CardKeyword.Exhaust };
     public PreMatchCalibration() : base(2, CardType.Skill, CardRarity.Uncommon, TargetType.Self) { }
-    protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p) => await TeamMemberUtils.TriggerAll(Owner, c);
-    protected override void OnUpgrade() => EnergyCost.UpgradeBy(-1);
+    public override bool GainsBlock => true;
+    protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
+    {
+        await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, p);
+        await TeamMemberUtils.TriggerAll(Owner, c);
+    }
+    protected override void OnUpgrade()
+    {
+        DynamicVars.Block.UpgradeValueBy(3m);
+        EnergyCost.UpgradeBy(-1);
+    }
 }
 
 [Pool(typeof(LaughmanCardPool))]
@@ -126,19 +136,28 @@ public class GyroSpinCommand : LaughmanCard
 {
     protected override IEnumerable<DynamicVar> CanonicalVars => new[] { new DynamicVar("Turns", 1m) };
     public GyroSpinCommand() : base(2, CardType.Skill, CardRarity.Uncommon, TargetType.Self) { }
-    protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p) { foreach (var mech in TeamMemberUtils.AliveMechs(Owner).Where(m => m.Monster is InfantryMech or SentinelMech or HeroMech)) await PowerCmd.Apply<GyroSpinPower>(c, mech, DynamicVars["Turns"].IntValue, Owner.Creature, this); }
+    protected override bool IsPlayable => TeamMemberUtils.AliveMechs(Owner).Count > 0;
+    protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p) { foreach (var mech in TeamMemberUtils.AliveMechs(Owner)) await PowerCmd.Apply<GyroSpinPower>(c, mech, DynamicVars["Turns"].IntValue, Owner.Creature, this); }
     protected override void OnUpgrade() => DynamicVars["Turns"].UpgradeValueBy(1m);
 }
 
 [Pool(typeof(LaughmanCardPool))]
 public class AiSentinel : LaughmanCard
 {
-    protected override IEnumerable<DynamicVar> CanonicalVars => new DynamicVar[] { new DynamicVar("Block", 3m), new DynamicVar("HitCount", 5m) };
+    protected override IEnumerable<DynamicVar> CanonicalVars => new DynamicVar[] { new BlockVar(7m, ValueProp.Move), new DynamicVar("MechBlock", 3m), new DynamicVar("HitCount", 5m) };
     public override IEnumerable<CardKeyword> CanonicalKeywords => new[] { CardKeyword.Exhaust };
     public AiSentinel() : base(1, CardType.Attack, CardRarity.Uncommon, TargetType.Self) { }
-    protected override bool IsPlayable => Owner.Creature.Pets.Any(p => p.Monster is SentinelMech && !p.IsDead);
-    protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p) { foreach (var s in Owner.Creature.Pets.Where(pet => pet.Monster is SentinelMech && !pet.IsDead)) { var power = await PowerCmd.Apply<AiSentinelPower>(c, s, 1m, Owner.Creature, this); if (power != null) { power.BlockAmount = DynamicVars["Block"].IntValue; power.HitCount = DynamicVars["HitCount"].IntValue; } } }
-    protected override void OnUpgrade() { DynamicVars["Block"].UpgradeValueBy(1m); DynamicVars["HitCount"].UpgradeValueBy(1m); }
+    public override bool GainsBlock => true;
+    protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
+    {
+        await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, p);
+        foreach (var s in Owner.Creature.Pets.Where(pet => pet.Monster is SentinelMech && !pet.IsDead))
+        {
+            var power = await PowerCmd.Apply<AiSentinelPower>(c, s, 1m, Owner.Creature, this);
+            if (power != null) { power.BlockAmount = DynamicVars["MechBlock"].IntValue; power.HitCount = DynamicVars["HitCount"].IntValue; }
+        }
+    }
+    protected override void OnUpgrade() { DynamicVars.Block.UpgradeValueBy(3m); DynamicVars["MechBlock"].UpgradeValueBy(1m); DynamicVars["HitCount"].UpgradeValueBy(1m); }
 }
 
 [Pool(typeof(LaughmanCardPool))]
@@ -227,8 +246,39 @@ public class ElectricalTraining : TeamMemberTraining
 [Pool(typeof(LaughmanCardPool))]
 public class SoftwareTrainingChoice : LaughmanCard
 {
+    private bool _upgradesChoice;
+
     public SoftwareTrainingChoice() : base(0, CardType.Skill, CardRarity.Token, TargetType.Self) { }
-    protected override Task OnPlay(PlayerChoiceContext c, CardPlay p) => Task.CompletedTask;
+
+    protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
+    {
+        var combatState = Owner.Creature.CombatState;
+        if (combatState == null)
+        {
+            return;
+        }
+
+        var choices = new List<CardModel>
+        {
+            combatState.CreateCard<VisionTraining>(Owner),
+            combatState.CreateCard<HardwareTraining>(Owner)
+        };
+        if (_upgradesChoice)
+        {
+            foreach (var choice in choices)
+            {
+                CardCmd.Upgrade(choice);
+            }
+        }
+
+        var chosen = await CardSelectCmd.FromChooseACardScreen(c, choices, Owner, canSkip: false);
+        if (chosen != null)
+        {
+            await CardPileCmd.AddGeneratedCardToCombat(chosen, PileType.Hand, Owner);
+        }
+    }
+
+    protected override void OnUpgrade() => _upgradesChoice = true;
 }
 
 [Pool(typeof(LaughmanCardPool))]
@@ -268,9 +318,22 @@ public class WeakpointMarking : LaughmanCard
 public class PrecisionGuidance : LaughmanCard
 {
     protected override IEnumerable<DynamicVar> CanonicalVars => new[] { new DynamicVar("MultiplierPct", 25m) };
-    public PrecisionGuidance() : base(2, CardType.Skill, CardRarity.Uncommon, TargetType.Self) { }
-    protected override bool IsPlayable => Owner.Creature.Pets.Any(p => p.Monster is DartBotMech && !p.IsDead);
-    protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p) { foreach (var d in Owner.Creature.Pets.Where(pet => pet.Monster is DartBotMech && !pet.IsDead)) { var power = await PowerCmd.Apply<PrecisionGuidancePower>(c, d, 1m, Owner.Creature, this); if (power != null) { power.BonusDamage = 0; power.DamageMultiplier = 1m + DynamicVars["MultiplierPct"].BaseValue / 100m; } } }
+    public override IEnumerable<CardKeyword> CanonicalKeywords => new[] { CardKeyword.Exhaust };
+    public PrecisionGuidance() : base(2, CardType.Skill, CardRarity.Rare, TargetType.Self) { }
+    protected override bool IsPlayable => TeamMemberUtils.AliveMechs(Owner).Count > 0;
+    protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
+    {
+        foreach (var mech in TeamMemberUtils.AliveMechs(Owner))
+        {
+            var power = await PowerCmd.Apply<PrecisionGuidancePower>(c, mech, 1m, Owner.Creature, this);
+            if (power != null)
+            {
+                power.BonusDamage = 0;
+                power.DamageMultiplier = 1m + DynamicVars["MultiplierPct"].BaseValue / 100m;
+                power.IgnoresBlock = mech.Monster is DartBotMech;
+            }
+        }
+    }
     protected override void OnUpgrade() => DynamicVars["MultiplierPct"].UpgradeValueBy(25m);
 }
 
@@ -304,7 +367,13 @@ public class PrepReview : LaughmanCard
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
         var entries = new List<(TeamMemberType Type, int Amount)> { (TeamMemberType.Mechanical, TeamMemberUtils.Amount<MechanicalMemberPower>(Owner)), (TeamMemberType.Electrical, TeamMemberUtils.Amount<ElectricalMemberPower>(Owner)), (TeamMemberType.Vision, TeamMemberUtils.Amount<VisionMemberPower>(Owner)), (TeamMemberType.Hardware, TeamMemberUtils.Amount<HardwareMemberPower>(Owner)) }.Where(e => e.Amount > 0).ToList();
-        if (entries.Count == 0) return;
+        if (entries.Count == 0)
+        {
+            var type = (TeamMemberType)Owner.RunState.Rng.MonsterAi.NextInt(4);
+            await TeamMemberUtils.Add(c, Owner, type);
+            await TeamMemberUtils.Trigger(Owner, type, 1, c);
+            return;
+        }
         int maxAmount = entries.Max(e => e.Amount);
         var highest = entries.Where(e => e.Amount == maxAmount).ToList();
         var chosen = highest[Owner.RunState.Rng.MonsterAi.NextInt(highest.Count)].Type;
@@ -437,21 +506,16 @@ public class RoadToSpringCocoon : LaughmanCard
 
 // 冠军形态（先古卡）：由古老牙齿把「基地补给」变身获得。升级后费用 2→1。
 [Pool(typeof(LaughmanCardPool))]
-public class ChampionForm : LaughmanCard
+public class ChampionForm : LaughmanCard, IOwnedMechTargetingCard
 {
-    public ChampionForm() : base(2, CardType.Power, CardRarity.Ancient, TargetType.Self) { }
+    public ChampionForm() : base(2, CardType.Power, CardRarity.Ancient, TargetType.AnyAlly) { }
 
     protected override bool IsPlayable => TeamMemberUtils.AliveMechs(Owner).Count > 0;
 
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
-        var target = TeamMemberUtils.AliveMechs(Owner)
-            .OrderBy(m => m.Monster switch { HeroMech => 0, InfantryMech => 1, SentinelMech => 2, _ => 3 })
-            .FirstOrDefault();
-        if (target == null)
-        {
-            return;
-        }
+        ArgumentNullException.ThrowIfNull(p.Target);
+        var target = p.Target;
         await CreatureCmd.GainMaxHp(target, 12m);
         await CreatureCmd.Heal(target, 12m);
         await PowerCmd.Apply<StrengthPower>(c, target, 5m, Owner.Creature, this);

@@ -11,6 +11,7 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.ValueProps;
+using Laughman.LaughmanCode.Config;
 
 namespace Laughman.LaughmanCode.Mechs;
 
@@ -21,6 +22,7 @@ public class ExchangeMiningPower : CustomPowerModel
     public override string? CustomPackedIconPath => "res://" + "laughing_thunder.png".RelicImagePath();
 
     private int _earned;
+    private int _strengthGranted;
 
     public override async Task AfterApplied(Creature? applier, CardModel? cardSource)
     {
@@ -54,12 +56,16 @@ public class ExchangeMiningPower : CustomPowerModel
         {
             return 1m;
         }
-        return Amount >= 4 ? 0.5m : Amount >= 3 ? 0.75m : 1m;
+        return DamageMultiplierForAmount(Amount);
     }
+
+    public static decimal DamageMultiplierForAmount(int amount) =>
+        amount >= 4 ? WeakHelper.V(0.75m, 0.5m) : amount >= 3 ? 0.75m : 1m;
 
     private async Task BuffMechs(Player owner)
     {
-        int strength = Amount switch { 2 => 2, >= 3 => 3, _ => 0 };
+        int targetStrength = Amount switch { 2 => 2, >= 3 => 3, _ => 0 };
+        int strength = Math.Max(0, targetStrength - _strengthGranted);
         if (strength <= 0)
         {
             return;
@@ -68,5 +74,6 @@ public class ExchangeMiningPower : CustomPowerModel
         {
             await PowerCmd.Apply<StrengthPower>(new ThrowingPlayerChoiceContext(), mech, strength, Owner, null);
         }
+        _strengthGranted = targetStrength;
     }
 }

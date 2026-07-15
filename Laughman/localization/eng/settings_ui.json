@@ -2,7 +2,7 @@
   "LAUGHMAN-WEAK_MODE_SECTION.title": "平衡模式",
   "LAUGHMAN-WEAK_MODE.title": "削弱版",
   "LAUGHMAN-WEAK_MODE.hover.title": "削弱版",
-  "LAUGHMAN-WEAK_MODE.hover.desc": "开启后（需重启游戏），本角色的大部分卡牌与机器人数值会切换为削弱值，整体强度约为“比原版略强、低于强势模组”。适合觉得默认版本过强的玩家。修改此选项后必须重启游戏才能生效。",
+  "LAUGHMAN-WEAK_MODE.hover.desc": "开启后（需重启游戏），队员稳定层数降为2，机械成长、现场维修、复活行动、熬夜调车重复返能、时间管理大师触发次数、机器人大赛决赛行动次数、精密工程X加值和兑矿减伤会切换为削弱值。整体强度约为比原版略强。",
   "LAUGHMAN-CROSS_CHARACTER_CONTENT_SECTION.title": "其他角色内容共享",
   "LAUGHMAN-SHARE_EVENTS_WITH_OTHER_CHARACTERS.title": "共享模组事件",
   "LAUGHMAN-SHARE_EVENTS_WITH_OTHER_CHARACTERS.hover.title": "共享模组事件",

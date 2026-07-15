@@ -27,14 +27,14 @@ public sealed class TripleCrownChampion : CustomMonsterModel
 
     public override NCreatureVisuals? CreateCustomVisuals()
     {
-        var texture = PreloadManager.Cache.GetTexture2D("res://" + "placeholder.png".CardImagePath());
+        var texture = PreloadManager.Cache.GetTexture2D("res://Laughman/images/monsters/triple_crown_base.jpg");
         if (texture == null)
         {
             return null;
         }
         var visuals = NodeFactory<NCreatureVisuals>.CreateFromResource(texture);
-        visuals.DefaultScale = 0.38f;
-        visuals.Scale = Vector2.One * 0.38f;
+        visuals.DefaultScale = 0.72f;
+        visuals.Scale = Vector2.One * 0.72f;
         return visuals;
     }
 

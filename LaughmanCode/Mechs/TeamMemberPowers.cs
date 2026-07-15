@@ -6,6 +6,7 @@ using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Powers;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using Laughman.LaughmanCode.Config;
 
 namespace Laughman.LaughmanCode.Mechs;
 
@@ -23,7 +24,8 @@ public abstract class TeamMemberPower : CustomPowerModel
         {
             int triggerAmount = Amount;
             await TeamMemberUtils.Trigger(Owner.Player, MemberType, triggerAmount);
-            if (triggerAmount >= 4)
+            int stableAmount = WeakHelper.V(2, 3);
+            if (triggerAmount > stableAmount)
             {
                 await PowerCmd.ModifyAmount(new ThrowingPlayerChoiceContext(), this, -1m, Owner, null);
             }

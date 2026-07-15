@@ -93,6 +93,25 @@ public static class BorrowUtils
         return (null, false);
     }
 
+    public static async Task<bool> TryReturn(
+        PlayerChoiceContext context, Player owner, MechModel mech, int amount)
+    {
+        if (mech.Creature.GetPower<BorrowedPower>() is not { } power)
+        {
+            return false;
+        }
+        if (power.Amount <= amount)
+        {
+            await PowerCmd.Remove(power);
+        }
+        else
+        {
+            await PowerCmd.ModifyAmount(context, power, -amount, null, null);
+        }
+        RefreshBorrowVisual(owner, mech);
+        return true;
+    }
+
     public static async Task<int> ReturnRepeated(PlayerChoiceContext context, Player owner, int repeats)
     {
         int fullyReturned = 0;

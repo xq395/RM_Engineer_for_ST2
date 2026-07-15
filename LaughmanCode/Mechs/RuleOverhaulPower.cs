@@ -8,6 +8,7 @@ using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Entities.Powers;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.ValueProps;
+using Laughman.LaughmanCode.Config;
 
 namespace Laughman.LaughmanCode.Mechs;
 
@@ -23,6 +24,10 @@ public class RuleOverhaulPower : CustomPowerModel
 
     public async Task OnBorrow(PlayerChoiceContext context, Player owner, MechModel mech)
     {
+        if (WeakHelper.IsWeak && _triggeredMechs.Count > 0)
+        {
+            return;
+        }
         if (!_triggeredMechs.Add(mech.Creature))
         {
             return;

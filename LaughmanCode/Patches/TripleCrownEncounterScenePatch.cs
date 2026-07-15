@@ -15,14 +15,15 @@ internal static class TripleCrownEncounterScenePatch
             return;
         }
 
-        AddMarker(__result, "dart", new Vector2(1080f, 410f));
-        AddMarker(__result, "drone", new Vector2(1260f, 390f));
-        AddMarker(__result, "engineer", new Vector2(1430f, 420f));
-        AddMarker(__result, "hero", new Vector2(1600f, 430f));
-        AddMarker(__result, "infantry3", new Vector2(1070f, 650f));
-        AddMarker(__result, "sentinel", new Vector2(1250f, 670f));
-        AddMarker(__result, "boss", new Vector2(1430f, 650f));
-        AddMarker(__result, "infantry4", new Vector2(1610f, 670f));
+        // 屏卫集中在左侧前排，其余单位在右侧分层展开。
+        AddMarker(__result, "infantry3", new Vector2(1040f, 610f));
+        AddMarker(__result, "sentinel", new Vector2(1130f, 430f));
+        AddMarker(__result, "infantry4", new Vector2(1220f, 610f));
+        AddMarker(__result, "hero", new Vector2(1370f, 390f));
+        AddMarker(__result, "boss", new Vector2(1450f, 620f));
+        AddMarker(__result, "drone", new Vector2(1540f, 360f));
+        AddMarker(__result, "engineer", new Vector2(1640f, 610f));
+        AddMarker(__result, "dart", new Vector2(1740f, 420f));
     }
 
     private static void AddMarker(Control root, string name, Vector2 position)

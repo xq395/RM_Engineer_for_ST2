@@ -4,6 +4,7 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models.Powers;
+using Laughman.LaughmanCode.Config;
 
 namespace Laughman.LaughmanCode.Mechs;
 
@@ -17,6 +18,12 @@ public enum TeamMemberType
 
 public static class TeamMemberUtils
 {
+    public static bool HasAny(Player owner) =>
+        Amount<MechanicalMemberPower>(owner) > 0 ||
+        Amount<ElectricalMemberPower>(owner) > 0 ||
+        Amount<VisionMemberPower>(owner) > 0 ||
+        Amount<HardwareMemberPower>(owner) > 0;
+
     public static List<Creature> AliveMechs(Player owner) =>
         owner.Creature.Pets.Where(p => p.Monster is MechModel && !p.IsDead).ToList();
 
@@ -68,17 +75,17 @@ public static class TeamMemberUtils
             switch (type)
             {
                 case TeamMemberType.Mechanical:
-                    await CreatureCmd.GainMaxHp(target, 3m);
-                    await CreatureCmd.Heal(target, 3m);
+                    // GainMaxHp already heals by the gained amount.
+                    await CreatureCmd.GainMaxHp(target, WeakHelper.V(2m, 3m));
                     break;
                 case TeamMemberType.Electrical:
-                    await PowerCmd.Apply<PlatingPower>(context, target, Config.WeakHelper.V(2m, 3m), owner.Creature, null);
+                    await PowerCmd.Apply<PlatingPower>(context, target, 2m, owner.Creature, null);
                     break;
                 case TeamMemberType.Vision:
                     await PowerCmd.Apply<StrengthPower>(context, target, 1m, owner.Creature, null);
                     break;
                 case TeamMemberType.Hardware:
-                    await PowerCmd.Apply<DexterityPower>(context, target, 2m, owner.Creature, null);
+                    await PowerCmd.Apply<DexterityPower>(context, target, 1m, owner.Creature, null);
                     break;
             }
         }
@@ -117,10 +124,29 @@ public static class TeamMemberUtils
         }
     }
 
-    public static async Task ReduceHighest(PlayerChoiceContext context, Player owner)
-        => await ReduceHighest(context, owner, 1);
+    public static async Task Add(PlayerChoiceContext context, Player owner, TeamMemberType type, int amount = 1)
+    {
+        switch (type)
+        {
+            case TeamMemberType.Mechanical:
+                await PowerCmd.Apply<MechanicalMemberPower>(context, owner.Creature, amount, owner.Creature, null);
+                break;
+            case TeamMemberType.Electrical:
+                await PowerCmd.Apply<ElectricalMemberPower>(context, owner.Creature, amount, owner.Creature, null);
+                break;
+            case TeamMemberType.Vision:
+                await PowerCmd.Apply<VisionMemberPower>(context, owner.Creature, amount, owner.Creature, null);
+                break;
+            case TeamMemberType.Hardware:
+                await PowerCmd.Apply<HardwareMemberPower>(context, owner.Creature, amount, owner.Creature, null);
+                break;
+        }
+    }
 
-    public static async Task ReduceHighest(PlayerChoiceContext context, Player owner, int amount)
+    public static Task<bool> ReduceHighest(PlayerChoiceContext context, Player owner)
+        => ReduceHighest(context, owner, 1);
+
+    public static async Task<bool> ReduceHighest(PlayerChoiceContext context, Player owner, int amount)
     {
         var powers = new MegaCrit.Sts2.Core.Models.PowerModel?[]
         {
@@ -129,13 +155,14 @@ public static class TeamMemberUtils
             owner.Creature.GetPower<VisionMemberPower>(),
             owner.Creature.GetPower<HardwareMemberPower>()
         }.Where(p => p != null && p.Amount > 0).ToList();
-        if (powers.Count == 0) return;
+        if (powers.Count == 0) return false;
 
         int highest = powers.Max(p => p!.Amount);
         var tied = powers.Where(p => p!.Amount == highest).ToList();
         var chosen = tied[owner.RunState.Rng.MonsterAi.NextInt(tied.Count)]!;
         if (chosen.Amount <= amount) await PowerCmd.Remove(chosen);
         else await PowerCmd.ModifyAmount(context, chosen, -amount, null, null);
+        return true;
     }
 
     public static async Task<int> ClearAll(PlayerChoiceContext context, Player owner)

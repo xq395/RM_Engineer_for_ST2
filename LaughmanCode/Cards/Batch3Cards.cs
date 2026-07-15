@@ -87,6 +87,7 @@ public class SchoolExhibition : LaughmanCard
 {
     protected override IEnumerable<DynamicVar> CanonicalVars => new[] { new DynamicVar("Energy", 2m) };
     public SchoolExhibition() : base(0, CardType.Skill, CardRarity.Uncommon, TargetType.Self) { }
+    protected override bool IsPlayable => BorrowUtils.FindBorrowable(Owner) != null;
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
         if (await BorrowUtils.TryBorrow(c, Owner, 1))
@@ -122,6 +123,7 @@ public class GuestCoach : LaughmanCard
 {
     protected override IEnumerable<DynamicVar> CanonicalVars => new DynamicVar[] { new DynamicVar("Strength", 2m), new DynamicVar("BorrowStrength", 3m), new DynamicVar("BorrowDex", 1m) };
     public GuestCoach() : base(1, CardType.Skill, CardRarity.Uncommon, TargetType.Self) { }
+    protected override bool IsPlayable => TeamMemberUtils.AliveMechs(Owner).Count > 0;
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
         bool borrowed = await BorrowUtils.TryBorrow(c, Owner, 1);
@@ -270,6 +272,7 @@ public class RoboticsFinals : LaughmanCard
     protected override IEnumerable<DynamicVar> CanonicalVars => new[] { new DynamicVar("Actions", 1m) };
     public override IEnumerable<CardKeyword> CanonicalKeywords => new[] { CardKeyword.Exhaust };
     public RoboticsFinals() : base(3, CardType.Attack, CardRarity.Rare, TargetType.Self) { }
+    protected override bool IsPlayable => TeamMemberUtils.AliveMechs(Owner).Any(mech => mech.Monster is MechModel model && !model.IsBorrowed);
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
         var combatState = Owner.Creature.CombatState;
@@ -283,12 +286,15 @@ public class RoboticsFinals : LaughmanCard
                 .ToList();
             foreach (var mech in mechs)
             {
-                await mech!.PerformTurn(Owner, combatState);
-                if (!mech.Creature.IsDead) mech.RefreshIntent(Owner, combatState);
+                await MechCoordinatorPower.TryPerformAction(c, Owner, combatState, mech!);
             }
         }
     }
-    protected override void OnUpgrade() => DynamicVars["Actions"].UpgradeValueBy(1m);
+    protected override void OnUpgrade()
+    {
+        if (Config.WeakHelper.IsWeak) EnergyCost.UpgradeBy(-1);
+        else DynamicVars["Actions"].UpgradeValueBy(1m);
+    }
 }
 
 // R14 世界技能大赛：从 3 张随机罕见/稀有工程师牌中选一张免费打出，借用 1 再选一张。
@@ -365,16 +371,19 @@ public class AllNighterTuning : LaughmanCard
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
         ArgumentNullException.ThrowIfNull(p.Target);
-        await TuneOnce(c, p);
+        await TuneOnce(c, p, gainEnergy: true);
         // 借用 1：重复一次（再失血、再打、再调一辆车）。
         if (await BorrowUtils.TryBorrow(c, Owner, 1))
         {
-            await TuneOnce(c, p);
+            await TuneOnce(c, p, gainEnergy: !Config.WeakHelper.IsWeak);
         }
     }
-    private async Task TuneOnce(PlayerChoiceContext c, CardPlay p)
+    private async Task TuneOnce(PlayerChoiceContext c, CardPlay p, bool gainEnergy)
     {
-        await PlayerCmd.GainEnergy(1m, Owner);
+        if (gainEnergy)
+        {
+            await PlayerCmd.GainEnergy(1m, Owner);
+        }
         await CreatureCmd.Damage(c, Owner.Creature, 1m, ValueProp.Unblockable | ValueProp.Unpowered, Owner.Creature);
         if (p.Target != null && !p.Target.IsDead)
         {
@@ -391,18 +400,17 @@ public class AllNighterTuning : LaughmanCard
 
 // R17 技术暂停：为主角争取格挡，并抢修生命比例最低的机甲。
 [Pool(typeof(LaughmanCardPool))]
-public class TacticalTimeout : LaughmanCard
+public class TacticalTimeout : LaughmanCard, IOwnedMechTargetingCard
 {
     protected override IEnumerable<DynamicVar> CanonicalVars => new DynamicVar[] { new BlockVar(12m, ValueProp.Move), new DynamicVar("Heal", 8m), new DynamicVar("Plating", 4m) };
     public override IEnumerable<CardKeyword> CanonicalKeywords => new[] { CardKeyword.Exhaust };
-    public TacticalTimeout() : base(2, CardType.Skill, CardRarity.Rare, TargetType.Self) { }
+    public TacticalTimeout() : base(2, CardType.Skill, CardRarity.Rare, TargetType.AnyAlly) { }
+    protected override bool IsPlayable => TeamMemberUtils.AliveMechs(Owner).Count > 0;
     public override bool GainsBlock => true;
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
         await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, p);
-        var mech = TeamMemberUtils.AliveMechs(Owner)
-            .OrderBy(m => (decimal)m.CurrentHp / Math.Max(1, m.MaxHp))
-            .FirstOrDefault();
+        var mech = p.Target;
         if (mech != null)
         {
             await CreatureCmd.Heal(mech, DynamicVars["Heal"].BaseValue);
@@ -457,6 +465,7 @@ public class RecallNotice : LaughmanCard
 {
     protected override IEnumerable<DynamicVar> CanonicalVars => new[] { new DynamicVar("Return", 1m), new DynamicVar("Draw", 1m) };
     public RecallNotice() : base(1, CardType.Skill, CardRarity.Common, TargetType.Self) { }
+    protected override bool IsPlayable => BorrowUtils.FindBorrowed(Owner) != null;
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
         await BorrowUtils.TryReturn(c, Owner, DynamicVars["Return"].IntValue);
@@ -467,16 +476,19 @@ public class RecallNotice : LaughmanCard
 
 // U26 紧急召回：深度归队并让目标获得小陀螺。
 [Pool(typeof(LaughmanCardPool))]
-public class EmergencyRecall : LaughmanCard
+public class EmergencyRecall : LaughmanCard, IOwnedMechTargetingCard
 {
     protected override IEnumerable<DynamicVar> CanonicalVars => new[] { new DynamicVar("Return", 3m) };
     public override IEnumerable<CardKeyword> CanonicalKeywords => new[] { CardKeyword.Exhaust };
-    public EmergencyRecall() : base(1, CardType.Skill, CardRarity.Uncommon, TargetType.Self) { }
+    public EmergencyRecall() : base(1, CardType.Skill, CardRarity.Uncommon, TargetType.AnyAlly) { }
+    public bool IsAllowedMechTarget(Creature target) => target.Monster is MechModel mech && mech.IsBorrowed;
+    protected override bool IsPlayable => BorrowUtils.FindBorrowed(Owner) != null;
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
-        var result = await BorrowUtils.TryReturn(c, Owner, DynamicVars["Return"].IntValue);
-        if (result.Mech != null)
-            await PowerCmd.Apply<GyroSpinPower>(c, result.Mech.Creature, 1m, Owner.Creature, this);
+        ArgumentNullException.ThrowIfNull(p.Target);
+        var mech = (MechModel)p.Target.Monster!;
+        if (await BorrowUtils.TryReturn(c, Owner, mech, DynamicVars["Return"].IntValue))
+            await PowerCmd.Apply<GyroSpinPower>(c, p.Target, 1m, Owner.Creature, this);
     }
     protected override void OnUpgrade() => EnergyCost.UpgradeBy(-1);
 }
@@ -488,6 +500,7 @@ public class PreMatchDispatchMeeting : LaughmanCard
     protected override IEnumerable<DynamicVar> CanonicalVars => new[] { new DynamicVar("Repeats", 3m) };
     public override IEnumerable<CardKeyword> CanonicalKeywords => new[] { CardKeyword.Exhaust };
     public PreMatchDispatchMeeting() : base(1, CardType.Skill, CardRarity.Rare, TargetType.Self) { }
+    protected override bool IsPlayable => BorrowUtils.FindBorrowed(Owner) != null;
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
         int returned = await BorrowUtils.ReturnRepeated(c, Owner, DynamicVars["Repeats"].IntValue);
@@ -520,7 +533,7 @@ public class FarewellDinner : LaughmanCard
     protected override IEnumerable<DynamicVar> CanonicalVars => new DynamicVar[]
     {
         new DamageVar(10m, ValueProp.Move),
-        new DynamicVar("PerMember", 4m)
+        new DynamicVar("PerMember", 7m)
     };
     public override IEnumerable<CardKeyword> CanonicalKeywords => new[] { CardKeyword.Exhaust };
     public FarewellDinner() : base(2, CardType.Attack, CardRarity.Rare, TargetType.AnyEnemy) { }
@@ -538,7 +551,7 @@ public class FarewellDinner : LaughmanCard
     protected override void OnUpgrade()
     {
         DynamicVars.Damage.UpgradeValueBy(3m);
-        DynamicVars["PerMember"].UpgradeValueBy(1m);
+        DynamicVars["PerMember"].UpgradeValueBy(2m);
     }
 }
 
@@ -549,9 +562,13 @@ public class DismissalNotice : LaughmanCard
     protected override IEnumerable<DynamicVar> CanonicalVars => new DynamicVar[] { new DynamicVar("Energy", 2m), new DynamicVar("Cards", 2m) };
     public override IEnumerable<CardKeyword> CanonicalKeywords => new[] { CardKeyword.Exhaust };
     public DismissalNotice() : base(0, CardType.Skill, CardRarity.Uncommon, TargetType.Self) { }
+    protected override bool IsPlayable => TeamMemberUtils.HasAny(Owner);
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
-        await TeamMemberUtils.ReduceHighest(c, Owner);
+        if (!await TeamMemberUtils.ReduceHighest(c, Owner))
+        {
+            return;
+        }
         await PlayerCmd.GainEnergy(DynamicVars["Energy"].BaseValue, Owner);
         var prefs = new CardSelectorPrefs(CardSelectorPrefs.ExhaustSelectionPrompt, 0, DynamicVars["Cards"].IntValue);
         foreach (var card in await CardSelectCmd.FromHand(c, Owner, prefs, null, this))
@@ -594,7 +611,7 @@ public class MechCooldown : LaughmanCard
 public class CollectiveFire : LaughmanCard
 {
     protected override IEnumerable<DynamicVar> CanonicalVars => new DynamicVar[] { new DamageVar(7m, ValueProp.Move), new DynamicVar("Turns", 2m) };
-    public CollectiveFire() : base(2, CardType.Attack, CardRarity.Uncommon, TargetType.AnyEnemy) { }
+    public CollectiveFire() : base(1, CardType.Attack, CardRarity.Uncommon, TargetType.AnyEnemy) { }
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
         ArgumentNullException.ThrowIfNull(p.Target);
@@ -684,7 +701,7 @@ public class PrecisionEngineering : LaughmanCard
             engineer.MaxActions = DynamicVars["Actions"].IntValue;
         }
         var power = await PowerCmd.Apply<PrecisionEngineeringPower>(c, Owner.Creature, 1m, Owner.Creature, this);
-        if (power != null) power.Increase = DynamicVars["XBonus"].IntValue;
+        if (power != null) power.Increase = Math.Max(power.Increase, DynamicVars["XBonus"].IntValue);
     }
     protected override void OnUpgrade()
     {
@@ -692,7 +709,7 @@ public class PrecisionEngineering : LaughmanCard
         DynamicVars["Block"].UpgradeValueBy(3m);
         DynamicVars["Gold"].UpgradeValueBy(1m);
         DynamicVars["Actions"].UpgradeValueBy(2m);
-        DynamicVars["XBonus"].UpgradeValueBy(1m);
+        DynamicVars["XBonus"].UpgradeValueBy(Config.WeakHelper.V(0m, 1m));
     }
 }
 
@@ -785,13 +802,12 @@ public class CoordinatedStrike : LaughmanCard
             mech.ForcedAttackTarget = p.Target;
             try
             {
-                await mech.PerformTurn(Owner, combatState);
+                await MechCoordinatorPower.TryPerformAction(c, Owner, combatState, mech);
             }
             finally
             {
                 mech.ForcedAttackTarget = null;
             }
-            if (!mech.Creature.IsDead) mech.RefreshIntent(Owner, combatState);
         }
     }
     protected override void OnUpgrade() => DynamicVars.Damage.UpgradeValueBy(3m);

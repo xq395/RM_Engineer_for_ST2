@@ -27,6 +27,7 @@ public class Overclock : LaughmanCard
         new[] { CardKeyword.Exhaust };
 
     public Overclock() : base(1, CardType.Attack, CardRarity.Uncommon, TargetType.Self) { }
+    protected override bool IsPlayable => TeamMemberUtils.AliveMechs(Owner).Count > 0;
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

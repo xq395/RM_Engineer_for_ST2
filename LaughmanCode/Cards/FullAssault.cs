@@ -21,6 +21,7 @@ public class FullAssault : LaughmanCard
         new[] { new DynamicVar("BlockPerMech", 0m) };
 
     public FullAssault() : base(2, CardType.Attack, CardRarity.Uncommon, TargetType.Self) { }
+    protected override bool IsPlayable => TeamMemberUtils.AliveMechs(Owner).Any(mech => mech.Monster is MechModel model && !model.IsBorrowed);
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
@@ -34,6 +35,7 @@ public class FullAssault : LaughmanCard
             .Where(p => p.Monster is MechModel && !p.IsDead)
             .Select(p => p.Monster as MechModel)
             .ToList();
+        int acted = 0;
 
         foreach (var mech in mechs)
         {
@@ -41,20 +43,18 @@ public class FullAssault : LaughmanCard
             {
                 continue;
             }
-            await mech.PerformTurn(Owner, combatState);
-            if (!mech.Creature.IsDead)
+            if (await MechCoordinatorPower.TryPerformAction(choiceContext, Owner, combatState, mech))
             {
-                mech.RefreshIntent(Owner, combatState);
+                acted++;
             }
         }
 
         decimal blockPerMech = DynamicVars["BlockPerMech"].BaseValue;
         if (blockPerMech > 0m)
         {
-            int count = mechs.Count(m => m != null);
-            if (count > 0)
+            if (acted > 0)
             {
-                await CreatureCmd.GainBlock(Owner.Creature, blockPerMech * count, ValueProp.Move, cardPlay);
+                await CreatureCmd.GainBlock(Owner.Creature, blockPerMech * acted, ValueProp.Move, cardPlay);
             }
         }
     }
