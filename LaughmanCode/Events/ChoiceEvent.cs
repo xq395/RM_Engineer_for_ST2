@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using BaseLib.Abstracts;
 using Laughman.LaughmanCode.Cards;
+using Laughman.LaughmanCode.Config;
 using Laughman.LaughmanCode.Relics;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
@@ -20,15 +21,21 @@ public sealed class ChoiceEvent : CustomEventModel
     private const int Act2Index = 1;
     private const int Act3Index = 2;
 
+    public override string? CustomInitialPortraitPath =>
+        "res://Laughman/images/card_portraits/sprint_u_c.png";
+
     public override bool IsAllowed(IRunState runState)
-        => runState.CurrentActIndex == Act2Index || runState.CurrentActIndex == Act3Index;
+        => (runState.CurrentActIndex == Act2Index || runState.CurrentActIndex == Act3Index)
+           && CrossCharacterContent.AllowForRun(
+               LaughmanConfig.ShareEventsWithOtherCharacters,
+               runState);
 
     protected override IReadOnlyList<EventOption> GenerateInitialOptions()
     {
         return new List<EventOption>
         {
-            new EventOption(this, MustGo, "CHOICE_EVENT.pages.INITIAL.options.MUST_GO"),
-            new EventOption(this, NeverHappy, "CHOICE_EVENT.pages.INITIAL.options.NEVER_HAPPY"),
+            Option(MustGo),
+            Option(NeverHappy),
         };
     }
 
@@ -37,7 +44,7 @@ public sealed class ChoiceEvent : CustomEventModel
     {
         var quest = Owner.RunState.CreateCard<SprintUC>(Owner);
         CardCmd.PreviewCardPileAdd(await CardPileCmd.Add(quest, PileType.Deck), 2f);
-        SetEventFinished(L10NLookup("CHOICE_EVENT.pages.RESULT_MUST.description"));
+        SetEventFinished(L10NLookup($"{Id.Entry}.pages.RESULT_MUST.description"));
     }
 
     // 「从来没觉得打RM开心过……」：获得遗物 涂满的笔记本。
@@ -45,6 +52,6 @@ public sealed class ChoiceEvent : CustomEventModel
     {
         var relic = ModelDb.Relic<ScribbledNotebook>().ToMutable();
         await RelicCmd.Obtain(relic, Owner);
-        SetEventFinished(L10NLookup("CHOICE_EVENT.pages.RESULT_NEVER.description"));
+        SetEventFinished(L10NLookup($"{Id.Entry}.pages.RESULT_NEVER.description"));
     }
 }

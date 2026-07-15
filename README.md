@@ -38,8 +38,8 @@ RoboMaster 是一项以机器人对抗为核心的工程竞技赛事。参赛队
 当前 Demo 已完成：
 
 - 1 名可游玩的自定义角色，以及完整的初始牌组、卡池和升级逻辑
-- 80+ 张已实现卡牌，包含常规卡牌、衍生牌、特殊牌和事件相关卡牌
-- 83 张专属卡牌插画与 3 个专属药水图标
+- 92 张已实现卡牌，包含常规卡牌、衍生牌、特殊牌和事件相关卡牌
+- 92 张专属卡牌插画与 3 个专属药水图标
 - 8 类机器人单位及其行动、意图、受伤、强化和协同逻辑
 - 10 件遗物，包含初始遗物、角色遗物及事件遗物
 - 2 个自定义事件，以及与先古之民交互的特殊内容
@@ -95,8 +95,8 @@ This mod is inspired by the experience of a RoboMaster team engineer. Preparatio
 The current Demo includes:
 
 - 1 playable custom character with a complete starting deck, card pool, and card upgrades
-- 80+ implemented cards, including collectible, generated, special, and event-related cards
-- 83 custom card illustrations and 3 custom potion icons
+- 92 implemented cards, including collectible, generated, special, and event-related cards
+- 92 custom card illustrations and 3 custom potion icons
 - 8 robot unit types with action, intent, damage, upgrade, and coordination logic
 - 10 relics, including starting, character-specific, and event relics
 - 2 custom events plus special interactions with Ancients

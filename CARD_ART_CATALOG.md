@@ -3,7 +3,7 @@
 > 自动生成文件。数据来源：`LaughmanCode/Cards/*.cs` 与 `Laughman/localization/eng/cards.json`。
 > 重新生成：在仓库根目录执行 `powershell -ExecutionPolicy Bypass -File .\export-card-art-catalog.ps1`。
 
-- 卡牌总数：89
+- 卡牌总数：92
 - 普通卡图建议尺寸：`1000x760`（可用 `500x380` 测试）
 - 大图建议尺寸：`1000x760`（与普通卡图保持相同构图比例）
 - 图片中不要生成卡名、数值或说明文字，游戏会自行渲染。

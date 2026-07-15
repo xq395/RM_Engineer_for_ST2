@@ -5,6 +5,7 @@ using Laughman.LaughmanCode.Extensions;
 using Godot;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.HoverTips;
+using MegaCrit.Sts2.Core.Models.Powers;
 
 namespace Laughman.LaughmanCode.Cards;
 
@@ -122,6 +123,9 @@ public abstract class LaughmanCard(int cost, CardType type, CardRarity rarity, T
         "PRECISION_ENGINEERING" => new[] { LaughmanHoverTips.Term("PRECISION_ENGINEER"), LaughmanHoverTips.Term("ACTION_LIMIT") },
         "SKY_EYE_RADAR" => new[] { LaughmanHoverTips.Term("SHACKLES"), LaughmanHoverTips.Term("FLANKING") },
         "IMPACT_U_L" => new[] { LaughmanHoverTips.Term("ROBOT"), LaughmanHoverTips.Term("GUARD") },
+        "TIME_SPARETH_NONE" => TeamMemberHoverTips,
+        "DRAW_TALISMAN" => new[] { LaughmanHoverTips.Term("ROBOT"), HoverTipFactory.FromPower<StrengthPower>() },
+        "CROSS_TERRAIN" => new[] { LaughmanHoverTips.Term("ROBOT"), LaughmanHoverTips.Term("BORROW"), HoverTipFactory.FromPower<VigorPower>() },
         _ => Array.Empty<IHoverTip>()
     };
 

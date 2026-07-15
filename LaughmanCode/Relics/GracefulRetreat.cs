@@ -6,6 +6,7 @@ using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Entities.Relics;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Models;
 
 namespace Laughman.LaughmanCode.Relics;
 
@@ -25,8 +26,8 @@ public class GracefulRetreat : LaughmanRelic
         await PlayerCmd.GainGold(Gold, Owner);
 
         // 获得 2 瓶随机药水（从角色药水池随机抽）。
-        var pool = Owner.Character.PotionPool
-            .GetUnlockedPotions(Owner.UnlockState).ToList();
+        var pool = ModelDb.PotionPool<LaughmanPotionPool>()
+            .GetUnlockedPotionsForSharedPool(Owner.UnlockState).ToList();
         if (pool.Count > 0)
         {
             for (int i = 0; i < Potions; i++)

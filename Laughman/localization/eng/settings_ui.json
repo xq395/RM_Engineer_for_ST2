@@ -2,5 +2,18 @@
   "LAUGHMAN-WEAK_MODE_SECTION.title": "平衡模式",
   "LAUGHMAN-WEAK_MODE.title": "削弱版",
   "LAUGHMAN-WEAK_MODE.hover.title": "削弱版",
-  "LAUGHMAN-WEAK_MODE.hover.desc": "开启后（需重启游戏），本角色的大部分卡牌与机器人数值会切换为削弱值，整体强度约为“比原版略强、低于强势模组”。适合觉得默认版本过强的玩家。修改此选项后必须重启游戏才能生效。"
+  "LAUGHMAN-WEAK_MODE.hover.desc": "开启后（需重启游戏），本角色的大部分卡牌与机器人数值会切换为削弱值，整体强度约为“比原版略强、低于强势模组”。适合觉得默认版本过强的玩家。修改此选项后必须重启游戏才能生效。",
+  "LAUGHMAN-CROSS_CHARACTER_CONTENT_SECTION.title": "其他角色内容共享",
+  "LAUGHMAN-SHARE_EVENTS_WITH_OTHER_CHARACTERS.title": "共享模组事件",
+  "LAUGHMAN-SHARE_EVENTS_WITH_OTHER_CHARACTERS.hover.title": "共享模组事件",
+  "LAUGHMAN-SHARE_EVENTS_WITH_OTHER_CHARACTERS.hover.desc": "开启后，未使用RM工程师的队伍也可能遇到本模组事件。关闭后，仅含RM工程师的队伍会遇到。修改后需重启游戏。",
+  "LAUGHMAN-SHARE_POTIONS_WITH_OTHER_CHARACTERS.title": "共享模组药水",
+  "LAUGHMAN-SHARE_POTIONS_WITH_OTHER_CHARACTERS.hover.title": "共享模组药水",
+  "LAUGHMAN-SHARE_POTIONS_WITH_OTHER_CHARACTERS.hover.desc": "开启后，本模组药水会加入共享药水池，其他角色也可获得。关闭后，仅RM工程师可获得。修改后需重启游戏。",
+  "LAUGHMAN-SHARE_RELICS_WITH_OTHER_CHARACTERS.title": "共享模组遗物",
+  "LAUGHMAN-SHARE_RELICS_WITH_OTHER_CHARACTERS.hover.title": "共享模组遗物",
+  "LAUGHMAN-SHARE_RELICS_WITH_OTHER_CHARACTERS.hover.desc": "开启后，本模组遗物会加入共享遗物池，其他角色也可获得。关闭后，仅RM工程师可获得。事件专属和初始遗物仍遵循各自的获取条件。修改后需重启游戏。",
+  "LAUGHMAN-SHARE_BOSSES_WITH_OTHER_CHARACTERS.title": "共享模组Boss战",
+  "LAUGHMAN-SHARE_BOSSES_WITH_OTHER_CHARACTERS.hover.title": "共享模组Boss战",
+  "LAUGHMAN-SHARE_BOSSES_WITH_OTHER_CHARACTERS.hover.desc": "开启后，未使用RM工程师的队伍也可能在对应章节遇到本模组Boss。关闭后，仅含RM工程师的队伍会遇到。修改后需重启游戏。"
 }

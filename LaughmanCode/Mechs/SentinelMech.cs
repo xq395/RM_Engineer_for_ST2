@@ -8,7 +8,7 @@ using MegaCrit.Sts2.Core.MonsterMoves.Intents;
 namespace Laughman.LaughmanCode.Mechs;
 
 // 哨兵机甲：守家支援，拥有屏卫。普通模式每回合给玩家格挡 + 小攻击。
-// AI 哨兵能够单走，仍使用原有的自格挡/小陀螺或多段攻击逻辑。
+// AI 哨兵能够单走，根据敌方意图选择两段自格挡加小陀螺，或多段攻击。
 public class SentinelMech : MechModel, IRevivableMech
 {
     private static int SelfBlock => WeakHelper.V(5, 7);
@@ -29,6 +29,7 @@ public class SentinelMech : MechModel, IRevivableMech
                 .Any(e => !e.IsDead && e.Monster?.NextMove.Intents.Any(i => i is AttackIntent) == true);
             if (enemyAttacks)
             {
+                await GiveSelfBlock(ai.BlockAmount);
                 await GiveSelfBlock(ai.BlockAmount);
                 await PowerCmd.Apply<GyroSpinPower>(new ThrowingPlayerChoiceContext(), Creature, 1m, Creature, null);
             }

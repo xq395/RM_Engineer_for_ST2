@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using BaseLib.Abstracts;
 using Godot;
+using Laughman.LaughmanCode.Config;
 using Laughman.LaughmanCode.Potions;
 using Laughman.LaughmanCode.Timeline;
 using MegaCrit.Sts2.Core.Entities.Potions;
@@ -26,6 +27,11 @@ public class LaughmanPotionPool : CustomPotionPoolModel
 
     // 药水受时间线门控：只有揭示 LaughmanPotionEpoch 后，本角色药水才进入池。
     public override IEnumerable<PotionModel> GetUnlockedPotions(UnlockState unlockState)
+        => LaughmanConfig.SharePotionsWithOtherCharacters
+            ? Array.Empty<PotionModel>()
+            : GetUnlockedPotionsForSharedPool(unlockState);
+
+    internal IEnumerable<PotionModel> GetUnlockedPotionsForSharedPool(UnlockState unlockState)
     {
         if (unlockState == UnlockState.all)
         {

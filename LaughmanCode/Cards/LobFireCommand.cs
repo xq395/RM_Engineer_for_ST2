@@ -22,6 +22,9 @@ public class LobFireCommand : LaughmanCard
 
     public LobFireCommand() : base(1, CardType.Attack, CardRarity.Uncommon, TargetType.Self) { }
 
+    protected override bool IsPlayable =>
+        Owner.Creature.Pets.Any(p => p.Monster is HeroMech && !p.IsDead);
+
     protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         var hero = Owner.Creature.Pets

@@ -7,9 +7,18 @@ namespace Laughman.LaughmanCode.Config;
 // 目标强度约为"比原版略强、低于强势模组"。
 //
 // 注意：配置属性必须为 static，且本类位于命名空间内（BaseLib 要求）。
-// 数值在卡牌注册时定型，因此修改开关后需重启游戏才能生效。
+// 部分内容池在启动时注册并缓存，因此修改开关后需重启游戏才能生效。
 internal class LaughmanConfig : SimpleModConfig
 {
     [ConfigSection("WEAK_MODE_SECTION")]
     public static bool WeakMode { get; set; } = false;
+
+    [ConfigSection("CROSS_CHARACTER_CONTENT_SECTION")]
+    public static bool ShareEventsWithOtherCharacters { get; set; } = true;
+
+    public static bool SharePotionsWithOtherCharacters { get; set; } = false;
+
+    public static bool ShareRelicsWithOtherCharacters { get; set; } = false;
+
+    public static bool ShareBossesWithOtherCharacters { get; set; } = true;
 }

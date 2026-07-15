@@ -20,6 +20,9 @@ namespace Laughman.LaughmanCode.Events;
 // 两个选项都会清除牌组里的任务卡 冲刺UC。
 public sealed class UcSprintEvent : CustomEventModel
 {
+    public override string? CustomInitialPortraitPath =>
+        "res://Laughman/images/card_portraits/road_to_spring_cocoon.png";
+
     // 不参与普通事件随机池；仅通过任务卡强制触发。
     public override bool IsAllowed(IRunState runState) => false;
 
@@ -27,8 +30,8 @@ public sealed class UcSprintEvent : CustomEventModel
     {
         return new List<EventOption>
         {
-            new EventOption(this, Ready, "UC_SPRINT_EVENT.pages.INITIAL.options.READY"),
-            new EventOption(this, RunAway, "UC_SPRINT_EVENT.pages.INITIAL.options.RUN_AWAY"),
+            Option(Ready),
+            Option(RunAway),
         };
     }
 
@@ -50,7 +53,7 @@ public sealed class UcSprintEvent : CustomEventModel
         await RelicCmd.Obtain(relic, Owner);
 
         await RemoveQuestCard();
-        SetEventFinished(L10NLookup("UC_SPRINT_EVENT.pages.RESULT_READY.description"));
+        SetEventFinished(L10NLookup($"{Id.Entry}.pages.RESULT_READY.description"));
     }
 
     // 「跑路了兄弟，跑路了」：获得遗物 美美撤离。
@@ -60,7 +63,7 @@ public sealed class UcSprintEvent : CustomEventModel
         await RelicCmd.Obtain(relic, Owner);
 
         await RemoveQuestCard();
-        SetEventFinished(L10NLookup("UC_SPRINT_EVENT.pages.RESULT_RUN.description"));
+        SetEventFinished(L10NLookup($"{Id.Entry}.pages.RESULT_RUN.description"));
     }
 
     // 移除牌组里的任务卡 冲刺UC（事件已消费）。

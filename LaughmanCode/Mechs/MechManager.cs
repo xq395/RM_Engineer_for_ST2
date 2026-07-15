@@ -22,8 +22,17 @@ public static class MechManager
         }
 
         var existing = FindMech<T>(owner);
-        if (existing != null && !existing.IsDead)
+        if (existing != null)
         {
+            if (existing.IsDead)
+            {
+                // 可复活机甲死亡后仍保留在 Pets 和场景树中。普通召唤不能绕过买活
+                // 规则复活它，也不能再创建同型宠物，否则两个节点会在固定 offset 上重叠。
+                await EnsureCoordinator(owner);
+                RefreshMechUi(owner);
+                return null;
+            }
+
             // 同名叠加：最大生命 +summonValue，仅回复 summonValue 的血（保留血量缺口）。
             await CreatureCmd.GainMaxHp(existing, summonValue);
             await EnsureCoordinator(owner);
@@ -74,21 +83,62 @@ public static class MechManager
         var playerNode = NCombatRoom.Instance?.GetCreatureNode(owner.Creature);
         foreach (var pet in owner.Creature.Pets)
         {
-            if (pet.Monster is MechModel mech && !pet.IsDead)
+            if (pet.Monster is not MechModel mech)
+            {
+                continue;
+            }
+
+            var node = NCombatRoom.Instance?.GetCreatureNode(pet);
+            if (node == null)
+            {
+                continue;
+            }
+
+            // 原版每次添加宠物都会重排所有 Pets，包括死亡后保留的可复活机甲。
+            // 无论死活都恢复固定布局，避免机甲在死亡期间被移走，复活时突然跳位。
+            if (playerNode != null)
+            {
+                node.Position = playerNode.Position + GetMechOffset(mech);
+            }
+
+            if (pet.IsDead)
+            {
+                node.ToggleIsInteractable(false);
+            }
+            else
             {
                 mech.RefreshIntent(owner, combatState);
-                var node = NCombatRoom.Instance?.GetCreatureNode(pet);
-                if (node == null)
-                {
-                    continue;
-                }
-                if (playerNode != null)
-                {
-                    node.Position = playerNode.Position + GetMechOffset(mech);
-                }
                 node.ToggleIsInteractable(true);
             }
         }
+    }
+
+    public static void RestoreRevivedMechUi(Player owner, Creature creature)
+    {
+        RefreshMechUi(owner);
+
+        var node = NCombatRoom.Instance?.GetCreatureNode(creature);
+        if (node == null || creature.IsDead)
+        {
+            return;
+        }
+
+        // StartDeathAnim 会关闭控制器焦点，StartReviveAnim 只恢复鼠标交互。
+        // 死亡/复活状态栏 tween 也可能短暂竞争，因此显式恢复最终可见状态。
+        node.Visible = true;
+        node.Modulate = Colors.White;
+        node.Visuals.Visible = true;
+        node.Visuals.Modulate = Colors.White;
+        node.Body.Visible = true;
+        node.Body.Modulate = Colors.White;
+        var healthBar = node.GetNodeOrNull<Control>("%HealthBar");
+        if (healthBar != null)
+        {
+            healthBar.Visible = true;
+            healthBar.Modulate = Colors.White;
+        }
+        node.Hitbox.FocusMode = Control.FocusModeEnum.All;
+        node.ToggleIsInteractable(true);
     }
 
     private static Vector2 GetMechOffset(MechModel mech)

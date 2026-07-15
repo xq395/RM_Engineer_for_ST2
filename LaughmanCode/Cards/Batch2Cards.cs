@@ -133,12 +133,12 @@ public class GyroSpinCommand : LaughmanCard
 [Pool(typeof(LaughmanCardPool))]
 public class AiSentinel : LaughmanCard
 {
-    protected override IEnumerable<DynamicVar> CanonicalVars => new DynamicVar[] { new DynamicVar("Block", 10m), new DynamicVar("HitCount", 5m) };
+    protected override IEnumerable<DynamicVar> CanonicalVars => new DynamicVar[] { new DynamicVar("Block", 3m), new DynamicVar("HitCount", 5m) };
     public override IEnumerable<CardKeyword> CanonicalKeywords => new[] { CardKeyword.Exhaust };
     public AiSentinel() : base(1, CardType.Attack, CardRarity.Uncommon, TargetType.Self) { }
     protected override bool IsPlayable => Owner.Creature.Pets.Any(p => p.Monster is SentinelMech && !p.IsDead);
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p) { foreach (var s in Owner.Creature.Pets.Where(pet => pet.Monster is SentinelMech && !pet.IsDead)) { var power = await PowerCmd.Apply<AiSentinelPower>(c, s, 1m, Owner.Creature, this); if (power != null) { power.BlockAmount = DynamicVars["Block"].IntValue; power.HitCount = DynamicVars["HitCount"].IntValue; } } }
-    protected override void OnUpgrade() { DynamicVars["Block"].UpgradeValueBy(2m); DynamicVars["HitCount"].UpgradeValueBy(1m); }
+    protected override void OnUpgrade() { DynamicVars["Block"].UpgradeValueBy(1m); DynamicVars["HitCount"].UpgradeValueBy(1m); }
 }
 
 [Pool(typeof(LaughmanCardPool))]
@@ -331,25 +331,18 @@ public class LoyalGuard : LaughmanCard
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
         int times = ResolveEnergyXValue() + DynamicVars["Extra"].IntValue;
-        if (times <= 0)
+        for (int i = 0; i < times; i++)
         {
-            return;
-        }
-
-        var infantry = MechManager.FindMech<InfantryMech>(Owner);
-        int upgrades = times;
-        if (infantry == null || infantry.IsDead)
-        {
-            infantry = await MechManager.SummonMech<InfantryMech>(Owner, IsUpgraded ? 18 : 13);
-            upgrades--;
-        }
-        if (infantry == null)
-        {
-            return;
-        }
-
-        for (int i = 0; i < upgrades; i++)
-        {
+            var infantry = MechManager.FindMech<InfantryMech>(Owner);
+            if (infantry == null)
+            {
+                await MechManager.SummonMech<InfantryMech>(Owner, IsUpgraded ? 18 : 13);
+                continue;
+            }
+            if (infantry.IsDead)
+            {
+                continue;
+            }
             await CreatureCmd.GainMaxHp(infantry, 6m);
             await PowerCmd.Apply<PlatingPower>(c, Owner.Creature, 1m, Owner.Creature, this);
             await PowerCmd.Apply<StrengthPower>(c, infantry, 1m, Owner.Creature, this);
@@ -442,7 +435,7 @@ public class RoadToSpringCocoon : LaughmanCard
     protected override void OnUpgrade() => DynamicVars["Count"].UpgradeValueBy(2m);
 }
 
-// 冠军形态（先古卡）：由古老牙齿把「基地补给」变身获得，也可由尘封魔典随机给出（见 DustyTomePatch）。
+// 冠军形态（先古卡）：由古老牙齿把「基地补给」变身获得。升级后费用 2→1。
 [Pool(typeof(LaughmanCardPool))]
 public class ChampionForm : LaughmanCard
 {

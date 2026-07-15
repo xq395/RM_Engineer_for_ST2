@@ -118,6 +118,9 @@ public static class TeamMemberUtils
     }
 
     public static async Task ReduceHighest(PlayerChoiceContext context, Player owner)
+        => await ReduceHighest(context, owner, 1);
+
+    public static async Task ReduceHighest(PlayerChoiceContext context, Player owner, int amount)
     {
         var powers = new MegaCrit.Sts2.Core.Models.PowerModel?[]
         {
@@ -131,8 +134,8 @@ public static class TeamMemberUtils
         int highest = powers.Max(p => p!.Amount);
         var tied = powers.Where(p => p!.Amount == highest).ToList();
         var chosen = tied[owner.RunState.Rng.MonsterAi.NextInt(tied.Count)]!;
-        if (chosen.Amount <= 1) await PowerCmd.Remove(chosen);
-        else await PowerCmd.ModifyAmount(context, chosen, -1m, null, null);
+        if (chosen.Amount <= amount) await PowerCmd.Remove(chosen);
+        else await PowerCmd.ModifyAmount(context, chosen, -amount, null, null);
     }
 
     public static async Task<int> ClearAll(PlayerChoiceContext context, Player owner)

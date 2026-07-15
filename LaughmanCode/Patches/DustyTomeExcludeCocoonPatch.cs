@@ -9,8 +9,8 @@ using MegaCrit.Sts2.Core.Models.Relics;
 
 namespace Laughman.LaughmanCode.Patches;
 
-// 尘封魔典（达弗给一张先古卡）：把「剑指春茧」排除出可给出的先古卡池，
-// 使其只能由三层特殊事件用「冲击UL」替换获得。冲击UL、冠军形态仍可正常被给出。
+// 尘封魔典固定给出本角色的专属先古卡「最是人间留不住」。
+// 冲击UL、冠军形态和剑指春茧均保留各自的专属获取途径。
 [HarmonyPatch(typeof(DustyTome), "SetupForPlayer")]
 public static class DustyTomeExcludeCocoonPatch
 {
@@ -19,9 +19,7 @@ public static class DustyTomeExcludeCocoonPatch
     {
         var items = player.Character.CardPool
             .GetUnlockedCards(player.UnlockState, player.RunState.CardMultiplayerConstraint)
-            .Where(c => c.Rarity == CardRarity.Ancient
-                && !ArchaicTooth.TranscendenceCards.Contains(c)
-                && c is not RoadToSpringCocoon)
+            .Where(c => c is TimeSparethNone)
             .ToList();
         if (items.Count == 0)
         {

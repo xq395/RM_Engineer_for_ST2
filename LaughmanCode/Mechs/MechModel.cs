@@ -1,6 +1,7 @@
 using BaseLib.Abstracts;
 using BaseLib.Utils.NodeFactories;
 using Godot;
+using Laughman.LaughmanCode.Bosses;
 using MegaCrit.Sts2.Core.Animation;
 using MegaCrit.Sts2.Core.Assets;
 using MegaCrit.Sts2.Core.Bindings.MegaSpine;
@@ -132,6 +133,8 @@ public abstract class MechModel : CustomMonsterModel
     // 优先攻击被「集火指令」标记的敌人。
     protected async Task AttackRandomEnemy(Player owner, ICombatState combatState, decimal damage, int hits = 1)
     {
+        var vigor = Creature.GetPower<VigorPower>();
+        damage += vigor?.Amount ?? 0m;
         var target = PickAttackTarget(owner, combatState);
         if (target == null)
         {
@@ -152,11 +155,17 @@ public abstract class MechModel : CustomMonsterModel
             // remain a powered attack and still receive Ramp Jump, guidance and focus-fire bonuses.
             await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), target, damage, props, Creature);
         }
+        if (vigor != null && Creature.GetPower<VigorPower>() == vigor)
+        {
+            await PowerCmd.Remove(vigor);
+        }
     }
 
     // 攻击所有存活敌人，各造成 damage 点伤害。
     protected async Task AttackAllEnemies(Player owner, ICombatState combatState, decimal damage, int hits = 1)
     {
+        var vigor = Creature.GetPower<VigorPower>();
+        damage += vigor?.Amount ?? 0m;
         for (int i = 0; i < hits; i++)
         {
             var enemies = combatState.HittableEnemies.Where(e => !e.IsDead).ToList();
@@ -164,7 +173,19 @@ public abstract class MechModel : CustomMonsterModel
             {
                 return;
             }
-            await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), enemies, damage, ValueProp.Move, Creature);
+            TripleCrownFormationPower.BeginDirectMultiTargetAttack(combatState);
+            try
+            {
+                await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), enemies, damage, ValueProp.Move, Creature);
+            }
+            finally
+            {
+                TripleCrownFormationPower.EndDirectMultiTargetAttack(combatState);
+            }
+        }
+        if (vigor != null && Creature.GetPower<VigorPower>() == vigor)
+        {
+            await PowerCmd.Remove(vigor);
         }
     }
 

@@ -36,6 +36,7 @@ public class BaseSupply : LaughmanCard
             await CreatureCmd.Heal(dead, dead.MaxHp);
             await PowerCmd.Apply<StrengthPower>(choiceContext, dead, DynamicVars["StrengthPower"].IntValue, Owner.Creature, this);
             await CreatureCmd.Stun(dead, (string?)null);
+            MechManager.RestoreRevivedMechUi(Owner, dead);
             return;
         }
 
