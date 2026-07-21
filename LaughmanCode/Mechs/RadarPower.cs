@@ -12,7 +12,7 @@ using Laughman.LaughmanCode.Extensions;
 namespace Laughman.LaughmanCode.Mechs;
 
 // 雷达（能力）：每回合开始给随机一名存活敌人施加易伤（升级后附带虚弱）。无实体、不受伤害。
-public class RadarPower : CustomPowerModel
+public class RadarPower : LaughmanPower
 {
     private const int VulnerableStacks = 1;
     private const int WeakStacks = 1;
@@ -20,7 +20,6 @@ public class RadarPower : CustomPowerModel
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Single;
 
-    public override string? CustomPackedIconPath => "res://" + "laughing_thunder.png".RelicImagePath();
 
     // 升级版雷达附带虚弱。由 RadarLock 卡在施放后设置。
     public bool AppliesWeak { get; set; }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Laughman.LaughmanCode.Character;
+using Laughman.LaughmanCode.Patches;
 using MegaCrit.Sts2.Core.Timeline;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Timeline.Scaffolding;
@@ -47,6 +48,8 @@ public sealed class LaughmanCharacterEpoch
 {
     public override string Id => "LAUGHMAN_CHARACTER_EPOCH";
     public override string StoryId => "laughman";
+    public override string CustomPackedPortraitPath => LaughmanTimelineArt.Small(Id);
+    public override string CustomBigPortraitPath => LaughmanTimelineArt.Big(Id);
 }
 
 // —— 纪元 2：报名·联调（era=2728）。门控招新与报名卡。 ——
@@ -60,6 +63,8 @@ public sealed class LaughmanCardEpoch : PackDeclaredCardUnlockEpochTemplate
 {
     public override string Id => "LAUGHMAN_CARD_EPOCH";
     public override string StoryId => "laughman";
+    public override string CustomPackedPortraitPath => LaughmanTimelineArt.Small(Id);
+    public override string CustomBigPortraitPath => LaughmanTimelineArt.Big(Id);
 }
 
 // —— 纪元 3：没那么美好（era=2729）。熬夜、清退、朋友退队。 ——
@@ -73,6 +78,8 @@ public sealed class LaughmanHardshipEpoch : PackDeclaredCardUnlockEpochTemplate
 {
     public override string Id => "LAUGHMAN_HARDSHIP_EPOCH";
     public override string StoryId => "laughman";
+    public override string CustomPackedPortraitPath => LaughmanTimelineArt.Small(Id);
+    public override string CustomBigPortraitPath => LaughmanTimelineArt.Big(Id);
 }
 
 // —— 纪元 4：战队管理层（era=2730）。借用、借车赚钱维持运营。 ——
@@ -86,6 +93,8 @@ public sealed class LaughmanManagementEpoch : PackDeclaredCardUnlockEpochTemplat
 {
     public override string Id => "LAUGHMAN_MANAGEMENT_EPOCH";
     public override string StoryId => "laughman";
+    public override string CustomPackedPortraitPath => LaughmanTimelineArt.Small(Id);
+    public override string CustomBigPortraitPath => LaughmanTimelineArt.Big(Id);
 
     // 揭示“战队管理层”时，同列展开纯剧情支线“车都被占用”（嵌入式大赛/借车赚钱）。
     protected override IEnumerable<Type> ExpansionEpochTypes => new[]
@@ -105,6 +114,8 @@ public sealed class LaughmanLeagueEpoch : PackDeclaredCardUnlockEpochTemplate
 {
     public override string Id => "LAUGHMAN_LEAGUE_EPOCH";
     public override string StoryId => "laughman";
+    public override string CustomPackedPortraitPath => LaughmanTimelineArt.Small(Id);
+    public override string CustomBigPortraitPath => LaughmanTimelineArt.Big(Id);
 }
 
 // —— 药水纪元：剑指春茧（最右列 era=2732）。门控招笑人药水（整池门控见 LaughmanPotionPool）。 ——
@@ -114,6 +125,8 @@ public sealed class LaughmanPotionEpoch : PotionUnlockEpochTemplate
 {
     public override string Id => "LAUGHMAN_POTION_EPOCH";
     public override string StoryId => "laughman";
+    public override string CustomPackedPortraitPath => LaughmanTimelineArt.Small(Id);
+    public override string CustomBigPortraitPath => LaughmanTimelineArt.Big(Id);
 
     // CreatePotionUnlockText 固定展示 3 项，给 3 个代表药水。
     protected override IEnumerable<Type> PotionTypes => new[]
@@ -134,4 +147,6 @@ public sealed class LaughmanBorrowedCarsEpoch : ModEpochTemplate
 {
     public override string Id => "LAUGHMAN_BORROWED_CARS_EPOCH";
     public override string StoryId => "laughman";
+    public override string CustomPackedPortraitPath => LaughmanTimelineArt.Small(Id);
+    public override string CustomBigPortraitPath => LaughmanTimelineArt.Big(Id);
 }

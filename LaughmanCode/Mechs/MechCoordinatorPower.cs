@@ -28,13 +28,12 @@ namespace Laughman.LaughmanCode.Mechs;
 // 之所以集中到一个 power：引擎的 ModifyUnblockedDamageTarget 会遍历所有 hook 监听者，
 // 多台机器人各自挂 guard power 会互相抢重定向；且“逐个结算 + 溢出分摊”只能由知道完整
 // 屏卫链的单点完成。
-public class MechCoordinatorPower : CustomPowerModel
+public class MechCoordinatorPower : LaughmanPower
 {
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Single;
     public override bool ShouldPlayVfx => false;
 
-    public override string? CustomPackedIconPath => "res://" + "laughing_thunder.png".RelicImagePath();
 
     // 玩家回合结束前：驱动所有机器人。
     // 放在回合结束而不是开始，能让当回合部署的机器人立刻产生收益，也让“飞坡”等本回合增益生效。
@@ -93,17 +92,34 @@ public class MechCoordinatorPower : CustomPowerModel
         }
 
         // Pet 不会自动收到正式参战单位的临时 Power 清理 hook。
-        // 新约无人机的 DarkShackles/FlexPotion 因此由协调器在整轮机甲行动后统一结算，
-        // 不能放在单台机甲行动后，否则后续机甲仍可能读到错误的力量状态。
+        // 新约无人机的 DarkShackles(临时 -力量) / FlexPotion(临时 +力量) 因此由协调器在整轮
+        // 机甲行动后统一结算，不能放在单台机甲行动后，否则后续机甲仍可能读到错误的力量状态。
+        //
+        // 关键：原版 TemporaryStrengthPower.AfterTurnEnd 会同时做两件事——移除自身，并回滚它当初
+        // 施加的 StrengthPower。但 pet 收不到该 hook，之前只 Remove 了临时 Power，却没回滚底层
+        // StrengthPower，导致偷取/自增的力量跨回合永久残留。这里补上力量回滚：
+        //  - FlexPotion 是 +力量，结算时 -Amount。
+        //  - DarkShackles 是 -力量，结算时 +Amount。
         foreach (var mech in GetMechs(owner))
         {
+            var ctx = new ThrowingPlayerChoiceContext();
             if (mech.Creature.GetPower<FlexPotionPower>() is { } flex)
             {
+                int flexAmount = flex.Amount;
                 await PowerCmd.Remove(flex);
+                if (flexAmount != 0)
+                {
+                    await PowerCmd.Apply<StrengthPower>(ctx, mech.Creature, -flexAmount, mech.Creature, null);
+                }
             }
             if (mech.Creature.GetPower<DarkShacklesPower>() is { } shackles)
             {
+                int shacklesAmount = shackles.Amount;
                 await PowerCmd.Remove(shackles);
+                if (shacklesAmount != 0)
+                {
+                    await PowerCmd.Apply<StrengthPower>(ctx, mech.Creature, shacklesAmount, mech.Creature, null);
+                }
             }
         }
 
@@ -291,10 +307,19 @@ public class MechCoordinatorPower : CustomPowerModel
 
     public override bool ShouldPowerBeRemovedAfterOwnerDeath() => false;
 
+    // 可买活机甲会保留死亡节点；同时保留其全部正负 Power，让买活/基地补给延续死前状态。
+    // 再部署走 MechManager 的重置路径，会显式清空这些 Power，视为一台全新机体。
+    public override bool ShouldPowerBeRemovedOnDeath(PowerModel power) =>
+        power.Owner.Monster is not IRevivableMech;
+
     // 让可买活的机器人（步兵/英雄/哨兵）死亡后仍留在战斗中，以便 U8 买活复活它们。
     // 其他机器人（工程/无人机/飞镖）死亡即移出。
     public override bool ShouldCreatureBeRemovedFromCombatAfterDeath(Creature creature)
     {
+        if (MechManager.IsReplacementDeath(creature))
+        {
+            return true;
+        }
         if (creature.Monster is IRevivableMech)
         {
             return false;

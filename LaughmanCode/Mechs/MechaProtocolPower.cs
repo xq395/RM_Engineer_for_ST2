@@ -12,14 +12,13 @@ using Laughman.LaughmanCode.Extensions;
 namespace Laughman.LaughmanCode.Mechs;
 
 // 视觉开源（能力）：每回合开始时，你的所有机器人各获得 1 点力量。
-public class MechaProtocolPower : CustomPowerModel
+public class MechaProtocolPower : LaughmanPower
 {
     private const int StrengthPerTurn = 1;
 
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Single;
 
-    public override string? CustomPackedIconPath => "res://" + "laughing_thunder.png".RelicImagePath();
 
     public override async Task AfterSideTurnStart(CombatSide side, IReadOnlyList<Creature> participants, ICombatState combatState)
     {

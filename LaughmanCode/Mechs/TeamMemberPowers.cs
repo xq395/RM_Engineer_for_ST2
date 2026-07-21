@@ -10,11 +10,10 @@ using Laughman.LaughmanCode.Config;
 
 namespace Laughman.LaughmanCode.Mechs;
 
-public abstract class TeamMemberPower : CustomPowerModel
+public abstract class TeamMemberPower : LaughmanPower
 {
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Counter;
-    public override string? CustomPackedIconPath => "res://" + "laughing_thunder.png".RelicImagePath();
 
     protected abstract TeamMemberType MemberType { get; }
 

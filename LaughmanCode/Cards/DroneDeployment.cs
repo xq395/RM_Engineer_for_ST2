@@ -9,7 +9,7 @@ using MegaCrit.Sts2.Core.Models;
 
 namespace Laughman.LaughmanCode.Cards;
 
-// U3 无人机部署：召唤一台无人机（10/14 血，飞行，多段 2×3 / 升级 2×5）。
+// U3 无人机部署：召唤一台无人机（9/12 血，飞行，多段 2×3 / 升级 2×4）。
 [Pool(typeof(LaughmanCardPool))]
 public class DroneDeployment : LaughmanCard
 {
@@ -35,6 +35,6 @@ public class DroneDeployment : LaughmanCard
     protected override void OnUpgrade()
     {
         DynamicVars["MechHp"].UpgradeValueBy(3m);
-        _hitCount = 5;
+        _hitCount = 4;
     }
 }

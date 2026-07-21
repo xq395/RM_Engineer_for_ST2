@@ -14,7 +14,7 @@ namespace Laughman.LaughmanCode.Mechs;
 
 // 新约无人机（R）：继承无人机以兼容原有交互（曼巴出去、飞行、共享伤害减半）。
 // 行为与原版无人机完全不同：
-//  - 行动时：扣 3 金币 + 扣自身 3 血（不可格挡），给一台其他机甲（屏卫优先）+护盾，
+//  - 行动时：扣 3 金币 + 扣自身 1 血（不可格挡），给一台其他机甲（屏卫优先）+护盾，
 //    并让它本回合临时 -X 力量（DarkShackles），自身 +护盾，并本回合临时 +X 力量（FlexPotion）。
 //    若没有可偷取的其他机甲，自身改为本回合临时 +2 力量。然后攻击（基础 0，吃自身力量）×5。
 //  - 双方力量都只在本回合临时生效，回合结束自动恢复。
@@ -23,7 +23,9 @@ namespace Laughman.LaughmanCode.Mechs;
 public class CovenantDroneMech : DroneMech
 {
     private const int GoldCost = 3;
-    private const int SelfDamage = 3;
+    // 偷力量不再跨回合永久累积后（bug 修复），下调自伤作为补偿：3->1。
+    // 新约仍保有“偷队友力量 + 双方护盾 + 多段攻击”的异格质变，只是不再无限滚雪球。
+    private const int SelfDamage = 1;
     private const int AttackHits = 5;
     private const int NoTargetStrength = 2;
 

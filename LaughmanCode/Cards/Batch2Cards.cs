@@ -121,8 +121,14 @@ public class PreMatchCalibration : LaughmanCard
     public override bool GainsBlock => true;
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
-        await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, p);
-        await TeamMemberUtils.TriggerAll(Owner, c);
+        if (TeamMemberUtils.CanTriggerAny(Owner))
+        {
+            await TeamMemberUtils.TriggerAll(Owner, c);
+        }
+        else
+        {
+            await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, p);
+        }
     }
     protected override void OnUpgrade()
     {
@@ -150,8 +156,14 @@ public class AiSentinel : LaughmanCard
     public override bool GainsBlock => true;
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
-        await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, p);
-        foreach (var s in Owner.Creature.Pets.Where(pet => pet.Monster is SentinelMech && !pet.IsDead))
+        var sentinels = Owner.Creature.Pets.Where(pet => pet.Monster is SentinelMech && !pet.IsDead).ToList();
+        if (sentinels.Count == 0)
+        {
+            await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, p);
+            return;
+        }
+
+        foreach (var s in sentinels)
         {
             var power = await PowerCmd.Apply<AiSentinelPower>(c, s, 1m, Owner.Creature, this);
             if (power != null) { power.BlockAmount = DynamicVars["MechBlock"].IntValue; power.HitCount = DynamicVars["HitCount"].IntValue; }
@@ -328,9 +340,10 @@ public class PrecisionGuidance : LaughmanCard
             var power = await PowerCmd.Apply<PrecisionGuidancePower>(c, mech, 1m, Owner.Creature, this);
             if (power != null)
             {
+                bool isDart = mech.Monster is DartBotMech;
                 power.BonusDamage = 0;
-                power.DamageMultiplier = 1m + DynamicVars["MultiplierPct"].BaseValue / 100m;
-                power.IgnoresBlock = mech.Monster is DartBotMech;
+                power.DamageMultiplier = isDart ? 1m : 1m + DynamicVars["MultiplierPct"].BaseValue / 100m;
+                power.IgnoresBlock = isDart;
             }
         }
     }
@@ -408,8 +421,12 @@ public class LoyalGuard : LaughmanCard
                 await MechManager.SummonMech<InfantryMech>(Owner, IsUpgraded ? 18 : 13);
                 continue;
             }
+            // 3号步兵已阵亡：本次迭代改为把它救回场上（治疗回满并恢复状态栏），
+            // 不再空耗 X。复活后的迭代会正常进入下面的强化分支。
             if (infantry.IsDead)
             {
+                await CreatureCmd.Heal(infantry, infantry.MaxHp);
+                MechManager.RestoreRevivedMechUi(Owner, infantry);
                 continue;
             }
             await CreatureCmd.GainMaxHp(infantry, 6m);
@@ -474,6 +491,9 @@ public class RoadToSpringCocoon : LaughmanCard
         return Task.CompletedTask;
     }
 
+    // 改为“进行 Count 次三选一”：连续 3 次（升级 4 次），每次从牌组中符合类型的召唤牌里随机取
+    // 3 张供玩家选择，选中的一张升级后立即打出。相比旧的“随机自动打出 3/4 张不同牌”，玩家每次都能
+    // 挑选，确保按需铺场，随机性只体现在每轮的候选池。
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
         var combatState = Owner.Creature.CombatState;
@@ -481,19 +501,41 @@ public class RoadToSpringCocoon : LaughmanCard
         {
             return;
         }
-        var candidates = Owner.Deck.Cards
-            .Where(card => PlayableTypes.Contains(card.GetType()))
-            .OrderBy(_ => Owner.RunState.Rng.MonsterAi.NextInt(999))
-            .Take(DynamicVars["Count"].IntValue)
-            .ToList();
-        foreach (var original in candidates)
+
+        int rounds = DynamicVars["Count"].IntValue;
+        for (int i = 0; i < rounds; i++)
         {
-            var card = combatState.CreateCard(original.CanonicalInstance, Owner);
-            if (!card.IsUpgraded)
+            var deckTypes = Owner.Deck.Cards
+                .Select(card => card.GetType())
+                .Where(type => PlayableTypes.Contains(type))
+                .Distinct()
+                .OrderBy(_ => Owner.RunState.Rng.MonsterAi.NextInt(999))
+                .Take(3)
+                .ToList();
+            if (deckTypes.Count == 0)
             {
-                CardCmd.Upgrade(card);
+                break;
             }
-            await CardCmd.AutoPlay(c, card, null, AutoPlayType.Default, skipXCapture: true, skipCardPileVisuals: false);
+
+            var choices = deckTypes
+                .Select(type => Owner.Deck.Cards.First(card => card.GetType() == type).CanonicalInstance)
+                .Select(canonical =>
+                {
+                    var card = combatState.CreateCard(canonical, Owner);
+                    if (!card.IsUpgraded)
+                    {
+                        CardCmd.Upgrade(card);
+                    }
+                    return card;
+                })
+                .ToList();
+
+            var chosen = await CardSelectCmd.FromChooseACardScreen(c, choices, Owner, canSkip: false);
+            if (chosen == null)
+            {
+                continue;
+            }
+            await CardCmd.AutoPlay(c, chosen, null, AutoPlayType.Default, skipXCapture: true, skipCardPileVisuals: false);
         }
     }
 
@@ -501,7 +543,7 @@ public class RoadToSpringCocoon : LaughmanCard
     private bool HasAllRequiredSummons() =>
         SummonSlots.All(slot => Owner.Deck.Cards.Any(card => slot.Contains(card.GetType())));
 
-    protected override void OnUpgrade() => DynamicVars["Count"].UpgradeValueBy(2m);
+    protected override void OnUpgrade() => DynamicVars["Count"].UpgradeValueBy(1m);
 }
 
 // 冠军形态（先古卡）：由古老牙齿把「基地补给」变身获得。升级后费用 2→1。

@@ -15,11 +15,10 @@ namespace Laughman.LaughmanCode.Mechs;
 //  - 若其意图包含攻击：施加 Shackles 层数的 [镣铐]（DarkShackles，当回合失去等量力量）。
 //  - 否则：施加 Flanking 层数的自定义 [夹击]（本轮受到的机器人伤害 +100%）。
 //  - 基础 Shackles=2 / Flanking=0；升级 Shackles=3 / Flanking=1。
-public class TianyanRadarPower : CustomPowerModel
+public class TianyanRadarPower : LaughmanPower
 {
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Single;
-    public override string? CustomPackedIconPath => "res://" + "laughing_thunder.png".RelicImagePath();
 
     // 由天眼雷达卡设置。
     public int ShacklesAmount { get; set; } = 2;

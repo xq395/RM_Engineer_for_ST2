@@ -12,11 +12,10 @@ namespace Laughman.LaughmanCode.Mechs;
 
 // R16 熬夜调车：每回合开始抽 1 张牌；若当前没有车正在借用，则借用 1，
 // 借用成功时使随机一台机器人获得 2/3 点力量和 2/3 层覆甲。
-public class AllNighterTuningPower : CustomPowerModel
+public class AllNighterTuningPower : LaughmanPower
 {
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Single;
-    public override string? CustomPackedIconPath => "res://" + "laughing_thunder.png".RelicImagePath();
 
     public int StrengthAmount { get; set; } = 2;
     public int PlatingAmount { get; set; } = 2;

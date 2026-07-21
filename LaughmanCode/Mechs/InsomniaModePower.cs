@@ -9,11 +9,10 @@ using MegaCrit.Sts2.Core.ValueProps;
 
 namespace Laughman.LaughmanCode.Mechs;
 
-public class InsomniaModePower : CustomPowerModel
+public class InsomniaModePower : LaughmanPower
 {
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Single;
-    public override string? CustomPackedIconPath => "res://" + "laughing_thunder.png".RelicImagePath();
 
     public override async Task AfterSideTurnStart(CombatSide side, IReadOnlyList<Creature> participants, ICombatState combatState)
     {

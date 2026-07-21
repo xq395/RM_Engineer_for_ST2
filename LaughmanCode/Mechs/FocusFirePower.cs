@@ -16,11 +16,10 @@ namespace Laughman.LaughmanCode.Mechs;
 //  - 层数 = 剩余持续回合数，玩家回合开始时 -1，归零移除。
 //  - 标记期间该敌人被机甲优先攻击（判断见 MechModel.PickAttackTarget）。
 //  - 该敌人受到来自机甲的每段伤害 +1（多段/全体各段分别 +1）。
-public class FocusFirePower : CustomPowerModel
+public class FocusFirePower : LaughmanPower
 {
     public override PowerType Type => PowerType.Debuff;
     public override PowerStackType StackType => PowerStackType.Counter;
-    public override string? CustomPackedIconPath => "res://" + "laughing_thunder.png".RelicImagePath();
 
     // 机甲对本目标的每段伤害 +1（仅限机甲来源的强攻击）。
     public override decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)

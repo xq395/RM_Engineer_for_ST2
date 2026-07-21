@@ -27,6 +27,11 @@ public static class StringExtensions
         return ResPath(MainFile.ModId, "images", "powers", path);
     }
 
+    public static string MonsterImagePath(this string path)
+    {
+        return ResPath(MainFile.ModId, "images", "monsters", path);
+    }
+
     public static string BigPowerImagePath(this string path)
     {
         return ResPath(MainFile.ModId, "images", "powers", "big", path);

@@ -11,8 +11,9 @@ namespace Laughman.LaughmanCode.Patches;
 // 扩展真正的古老牙齿选择逻辑：
 //  - 基地补给(BaseSupply) → 冠军形态(ChampionForm)
 //  - 3号步兵部署(InfantrySummon) → 冲击UL(ImpactUL)
-// 两者都是初始卡，古老牙齿在牌组里找到其一即变身。GetTranscendenceStarterCard 只返回一张，
-// 这里给出优先级：优先基地补给（若无官方候选），否则 3号步兵部署。
+// 两者都是初始卡，古老牙齿在牌组里找到其一即变身。沿用原版“牌组中第一张”规则：
+// 初始牌组默认先找到 3号步兵部署，确保冲击UL及后续剑指春茧任务链可达；
+// 若它已被移除或转化，再由基地补给变为冠军形态。
 [HarmonyPatch(typeof(ArchaicTooth))]
 public static class ArchaicToothChampionFormPatch
 {
@@ -20,9 +21,8 @@ public static class ArchaicToothChampionFormPatch
     [HarmonyPatch("GetTranscendenceStarterCard")]
     private static void FindLaughmanStarter(Player player, ref CardModel? __result)
     {
-        // 官方卡优先；官方没有时，找基地补给，再找 3号步兵部署。
-        __result ??= player.Deck.Cards.FirstOrDefault(card => card is BaseSupply)
-            ?? player.Deck.Cards.FirstOrDefault(card => card is InfantrySummon);
+        // 官方卡优先；官方没有时，按当前牌组顺序选择本角色的可超越初始牌。
+        __result ??= player.Deck.Cards.FirstOrDefault(card => card is InfantrySummon or BaseSupply);
     }
 
     [HarmonyPrefix]

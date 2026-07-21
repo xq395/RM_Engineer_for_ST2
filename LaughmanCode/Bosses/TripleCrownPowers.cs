@@ -1,5 +1,6 @@
 using BaseLib.Abstracts;
 using Laughman.LaughmanCode.Extensions;
+using Laughman.LaughmanCode.Mechs;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
@@ -12,11 +13,11 @@ using MegaCrit.Sts2.Core.ValueProps;
 
 namespace Laughman.LaughmanCode.Bosses;
 
-public sealed class TripleCrownGyroPower : CustomPowerModel
+public sealed class TripleCrownGyroPower : LaughmanPower
 {
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Single;
-    public override string? CustomPackedIconPath => "res://" + "laughing_thunder.png".RelicImagePath();
+    public override string? CustomPackedIconPath => "res://" + "gyro_spin_power.png".PowerImagePath();
 
     public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props,
         Creature? dealer, CardModel? cardSource, CardPlay? cardPlay) => target == Owner ? 0.5m : 1m;
@@ -31,11 +32,11 @@ public sealed class TripleCrownGyroPower : CustomPowerModel
     }
 }
 
-public sealed class TripleCrownRampPower : CustomPowerModel
+public sealed class TripleCrownRampPower : LaughmanPower
 {
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Single;
-    public override string? CustomPackedIconPath => "res://" + "laughing_thunder.png".RelicImagePath();
+    public override string? CustomPackedIconPath => "res://" + "ramp_jump_power.png".PowerImagePath();
 
     public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props,
         Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
@@ -57,18 +58,23 @@ public sealed class TripleCrownRampPower : CustomPowerModel
     }
 }
 
-public sealed class TripleCrownFormationPower : CustomPowerModel
+public sealed class TripleCrownFormationPower : LaughmanPower
 {
     private static readonly AsyncLocal<int> DirectMultiTargetDepth = new();
-    private readonly List<Creature> _pendingKills = new();
     private IReadOnlyList<Creature>? _guardSnapshot;
-    private bool _isMultiTargetAttack;
+
+    // 每台存活屏卫为本体和后排提供的减伤，最多叠加到 GuardReductionCap。
+    private const decimal GuardReductionPerGuard = 0.2m;
+    private const decimal GuardReductionCap = 0.6m;
 
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Single;
-    public override string? CustomPackedIconPath => "res://" + "laughing_thunder.png".RelicImagePath();
     public override bool ShouldPowerBeRemovedAfterOwnerDeath() => false;
 
+    // 屏卫光环：敌方每有一台存活屏卫（3号步兵/哨兵/4号步兵），本体和后排受到的强攻击伤害各减少
+    // 20%，最多 60%。屏卫本体正常承伤，可被击破以逐级削弱光环。
+    //  - 集火拆屏卫（对单流）：每杀一台屏卫，本体和后排减伤下降 20%，进展稳定。
+    //  - 分散铺场群攻（不早减员）：屏卫存活越久，整队减伤越持久，群攻收益被压低。
     public override decimal ModifyHpLostAfterOsty(Creature target, decimal amount, ValueProp props,
         Creature? dealer, CardModel? cardSource)
     {
@@ -77,90 +83,34 @@ public sealed class TripleCrownFormationPower : CustomPowerModel
             return amount;
         }
 
-        if (target == Owner)
-        {
-            return RouteBossDamage(amount, props, AliveGuards());
-        }
-
-        if (target.Monster is not TripleCrownMinion minion)
+        // 屏卫自身不吃光环减伤，正常承伤，方便被集火击破。
+        if (target.Monster is TripleCrownMinion guardMinion && guardMinion.IsGuard)
         {
             return amount;
         }
 
-        decimal multiplier = 1m;
-        if (minion.IsBackline && (_guardSnapshot ?? AliveGuards()).Count > 0)
+        bool isBoss = target == Owner;
+        bool isBackline = target.Monster is TripleCrownMinion backlineMinion && backlineMinion.IsBackline;
+        if (!isBoss && !isBackline)
         {
-            multiplier *= 0.5m;
+            return amount;
         }
-        if (IsMultiTargetAttack)
+
+        int guardCount = (_guardSnapshot ?? AliveGuards()).Count;
+        if (guardCount <= 0)
         {
-            multiplier *= 0.75m;
-            if (target.Monster is TripleCrownDrone)
-            {
-                multiplier *= 0.5m;
-            }
+            return amount;
         }
-        return Math.Floor(amount * multiplier);
-    }
 
-    private decimal RouteBossDamage(decimal amount, ValueProp props, IReadOnlyList<Creature> guards)
-    {
-        decimal remaining = amount;
-        foreach (var guard in guards)
-        {
-            if (remaining <= 0m)
-            {
-                break;
-            }
-
-            decimal multiplier = IncomingMultiplier(guard);
-            if (IsMultiTargetAttack)
-            {
-                multiplier *= 0.75m;
-            }
-            int effectiveDamage = (int)Math.Floor(remaining * multiplier);
-            if (effectiveDamage <= 0)
-            {
-                return 0m;
-            }
-
-            int effectiveAbsorbed = 0;
-            if (guard.Block > 0)
-            {
-                int absorbed = Math.Min(guard.Block, effectiveDamage);
-                guard.LoseBlockInternal(absorbed);
-                effectiveDamage -= absorbed;
-                effectiveAbsorbed += absorbed;
-                if (effectiveDamage <= 0)
-                {
-                    return 0m;
-                }
-            }
-
-            var result = guard.LoseHpInternal(effectiveDamage, props);
-            effectiveAbsorbed += result.UnblockedDamage;
-            if (!result.WasTargetKilled)
-            {
-                return 0m;
-            }
-
-            _pendingKills.Add(guard);
-            remaining = Math.Max(0m, remaining - effectiveAbsorbed / multiplier);
-        }
-        return remaining;
-    }
-
-    public override async Task AfterDamageReceived(PlayerChoiceContext choiceContext, Creature target,
-        DamageResult result, ValueProp props, Creature? dealer, CardModel? cardSource)
-    {
-        await FlushPendingKills();
+        decimal reduction = Math.Min(GuardReductionCap, GuardReductionPerGuard * guardCount);
+        return Math.Floor(amount * (1m - reduction));
     }
 
     public override Task BeforeAttack(AttackCommand command)
     {
+        // 单次攻击开始时锁定屏卫数量，保证一次多段/群攻内所有目标看到一致的光环层数。
         if (command.TargetSide == Owner.Side && command.DamageProps.IsPoweredAttack())
         {
-            _isMultiTargetAttack = command.IsMultiTargeted;
             _guardSnapshot = AliveGuards();
         }
         return Task.CompletedTask;
@@ -168,7 +118,6 @@ public sealed class TripleCrownFormationPower : CustomPowerModel
 
     public override Task AfterAttack(PlayerChoiceContext choiceContext, AttackCommand command)
     {
-        _isMultiTargetAttack = false;
         _guardSnapshot = null;
         return Task.CompletedTask;
     }
@@ -176,6 +125,10 @@ public sealed class TripleCrownFormationPower : CustomPowerModel
     internal static void BeginDirectMultiTargetAttack(ICombatState combatState)
     {
         DirectMultiTargetDepth.Value++;
+        if (DirectMultiTargetDepth.Value > 1)
+        {
+            return;
+        }
         var formation = combatState.Enemies
             .FirstOrDefault(enemy => enemy.Monster is TripleCrownChampion)
             ?.GetPower<TripleCrownFormationPower>();
@@ -188,36 +141,16 @@ public sealed class TripleCrownFormationPower : CustomPowerModel
     internal static void EndDirectMultiTargetAttack(ICombatState combatState)
     {
         DirectMultiTargetDepth.Value = Math.Max(0, DirectMultiTargetDepth.Value - 1);
+        if (DirectMultiTargetDepth.Value > 0)
+        {
+            return;
+        }
         var formation = combatState.Enemies
             .FirstOrDefault(enemy => enemy.Monster is TripleCrownChampion)
             ?.GetPower<TripleCrownFormationPower>();
         if (formation != null)
         {
             formation._guardSnapshot = null;
-        }
-    }
-
-    private bool IsMultiTargetAttack => _isMultiTargetAttack || DirectMultiTargetDepth.Value > 0;
-
-    public override async Task BeforeDeath(Creature creature)
-    {
-        if (creature == Owner)
-        {
-            await FlushPendingKills();
-        }
-    }
-
-    private async Task FlushPendingKills()
-    {
-        if (_pendingKills.Count == 0)
-        {
-            return;
-        }
-        var dead = _pendingKills.Where(creature => creature.IsDead).Distinct().ToList();
-        _pendingKills.Clear();
-        if (dead.Count > 0)
-        {
-            await CreatureCmd.Kill(dead);
         }
     }
 
@@ -245,14 +178,5 @@ public sealed class TripleCrownFormationPower : CustomPowerModel
             .Where(creature => creature != null)
             .Cast<Creature>()
             .ToList();
-    }
-
-    private static decimal IncomingMultiplier(Creature creature)
-    {
-        if (creature.HasPower<TripleCrownRampPower>() || creature.HasPower<TripleCrownGyroPower>())
-        {
-            return 0.5m;
-        }
-        return 1m;
     }
 }

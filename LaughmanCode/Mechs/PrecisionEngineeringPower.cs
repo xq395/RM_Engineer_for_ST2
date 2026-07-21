@@ -10,11 +10,10 @@ namespace Laughman.LaughmanCode.Mechs;
 // 精密工程（能力）：挂在玩家身上。只要有存活的工程机甲，你打出的 X 费牌的 X 值 +Increase。
 //  - Increase 基础 1，升级 2（由卡在施加后设置）。
 //  - 参考原版遗物通过 ModifyXValue 钩子给 X 费牌加值的实现。
-public class PrecisionEngineeringPower : CustomPowerModel
+public class PrecisionEngineeringPower : LaughmanPower
 {
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Single;
-    public override string? CustomPackedIconPath => "res://" + "laughing_thunder.png".RelicImagePath();
 
     // X 值加成，由 PrecisionEngineering 卡设置（基础 1 / 升级 2）。
     public int Increase { get; set; } = 1;

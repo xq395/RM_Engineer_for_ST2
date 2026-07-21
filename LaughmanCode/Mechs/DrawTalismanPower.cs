@@ -13,7 +13,7 @@ using MegaCrit.Sts2.Core.ValueProps;
 
 namespace Laughman.LaughmanCode.Mechs;
 
-public sealed class DrawTalismanPower : CustomPowerModel
+public sealed class DrawTalismanPower : LaughmanPower
 {
     private const int DamagePerCountdown = 25;
     private bool _isDetonating;
@@ -21,7 +21,6 @@ public sealed class DrawTalismanPower : CustomPowerModel
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Counter;
     public override PowerInstanceType InstanceType => PowerInstanceType.Instanced;
-    public override string? CustomPackedIconPath => "res://" + "laughing_thunder.png".RelicImagePath();
     protected override IEnumerable<DynamicVar> CanonicalVars => new DynamicVar[]
     {
         new DamageVar(10m, ValueProp.Unpowered),

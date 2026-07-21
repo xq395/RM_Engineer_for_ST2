@@ -24,6 +24,15 @@ public static class TeamMemberUtils
         Amount<VisionMemberPower>(owner) > 0 ||
         Amount<HardwareMemberPower>(owner) > 0;
 
+    public static bool CanTriggerAny(Player owner)
+    {
+        var mechs = AliveMechs(owner);
+        return
+            ((Amount<MechanicalMemberPower>(owner) > 0 || Amount<ElectricalMemberPower>(owner) > 0) && mechs.Count > 0) ||
+            (Amount<VisionMemberPower>(owner) > 0 && mechs.Any(p => p.Monster is HeroMech or InfantryMech or InfantryNo4Mech or SentinelMech or DroneMech or CovenantDroneMech or DartBotMech)) ||
+            (Amount<HardwareMemberPower>(owner) > 0 && mechs.Any(p => p.Monster is InfantryMech or InfantryNo4Mech or SentinelMech or DroneMech or CovenantDroneMech or EngineerMech));
+    }
+
     public static List<Creature> AliveMechs(Player owner) =>
         owner.Creature.Pets.Where(p => p.Monster is MechModel && !p.IsDead).ToList();
 

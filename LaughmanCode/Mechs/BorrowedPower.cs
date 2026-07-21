@@ -12,11 +12,10 @@ namespace Laughman.LaughmanCode.Mechs;
 // 借用（借用关键词）：挂在被借走机器人身上的 debuff。
 // 层数 = 剩余借用回合数。被借用期间该机器人不行动、不参与屏卫结算/共享受伤（判断见协调器）。
 // 每个玩家回合开始时自动 -1，归零移除。
-public class BorrowedPower : CustomPowerModel
+public class BorrowedPower : LaughmanPower
 {
     public override PowerType Type => PowerType.Debuff;
     public override PowerStackType StackType => PowerStackType.Counter;
-    public override string? CustomPackedIconPath => "res://" + "laughing_thunder.png".RelicImagePath();
 
     public override async Task AfterSideTurnStart(CombatSide side, IReadOnlyList<Creature> participants, ICombatState combatState)
     {

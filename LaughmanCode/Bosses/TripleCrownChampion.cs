@@ -27,7 +27,7 @@ public sealed class TripleCrownChampion : CustomMonsterModel
 
     public override NCreatureVisuals? CreateCustomVisuals()
     {
-        var texture = PreloadManager.Cache.GetTexture2D("res://Laughman/images/monsters/triple_crown_base.jpg");
+        var texture = PreloadManager.Cache.GetTexture2D("res://Laughman/images/monsters/triple_crown_base.png");
         if (texture == null)
         {
             return null;
@@ -96,8 +96,19 @@ public sealed class TripleCrownChampion : CustomMonsterModel
         if (await TryBuyback()) return;
         var minions = CombatState.Enemies.Where(enemy => enemy.IsAlive && enemy.Monster is ITripleCrownMinion).ToList();
         var context = new ThrowingPlayerChoiceContext();
-        await PowerCmd.Apply<StrengthPower>(context, minions, 3m, Creature, null);
-        await PowerCmd.Apply<DexterityPower>(context, minions, 3m, Creature, null);
+        // 联调改为“队员主体强化”：力量增幅大幅降低（3->1），改以覆甲和血上限强化防御，
+        // 更贴合冠军战队队员培养的主题，同时压低此前失控的力量滚雪球。
+        //  - 视觉：+1 力量
+        //  - 硬件：+1 敏捷
+        //  - 电控：+2 覆甲
+        //  - 机械：+3 最大生命
+        await PowerCmd.Apply<StrengthPower>(context, minions, 1m, Creature, null);
+        await PowerCmd.Apply<DexterityPower>(context, minions, 1m, Creature, null);
+        await PowerCmd.Apply<PlatingPower>(context, minions, 2m, Creature, null);
+        foreach (var minion in minions)
+        {
+            await CreatureCmd.GainMaxHp(minion, 3m);
+        }
         await PowerCmd.Apply<FrailPower>(context, targets, 3m, Creature, null);
         await PowerCmd.Apply<VulnerablePower>(context, targets, 3m, Creature, null);
     }

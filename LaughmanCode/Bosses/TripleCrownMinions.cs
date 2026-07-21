@@ -45,10 +45,16 @@ public abstract class TripleCrownMinion : CustomMonsterModel, ITripleCrownMinion
 
     public override NCreatureVisuals? CreateCustomVisuals()
     {
-        var texture = PreloadManager.Cache.GetTexture2D("res://" + "placeholder.png".CardImagePath());
+        var image = $"triple_crown_{SlotName}.png";
+        var texture = PreloadManager.Cache.GetTexture2D("res://" + image.MonsterImagePath());
         if (texture == null)
         {
-            return null;
+            MainFile.Logger.Info($"[{GetType().Name}] battle sprite not found, falling back to placeholder");
+            texture = PreloadManager.Cache.GetTexture2D("res://" + "placeholder.png".CardImagePath());
+            if (texture == null)
+            {
+                return null;
+            }
         }
 
         var visuals = NodeFactory<NCreatureVisuals>.CreateFromResource(texture);

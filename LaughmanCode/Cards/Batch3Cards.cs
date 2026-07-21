@@ -221,7 +221,7 @@ public class EmbeddedContest : LaughmanCard
     protected override void OnUpgrade() { DynamicVars.Damage.UpgradeValueBy(2m); DynamicVars.Block.UpgradeValueBy(2m); }
 }
 
-// R11 数学建模：抽牌+本回合手牌降费，借用 1 追加能量。
+// R11 数学建模：抽牌；借用成功后，本次抽到的牌各免费打出一次。
 [Pool(typeof(LaughmanCardPool))]
 public class MathModeling : LaughmanCard
 {
@@ -231,13 +231,12 @@ public class MathModeling : LaughmanCard
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
         var drawn = (await CardPileCmd.Draw(c, DynamicVars["Draw"].IntValue, Owner)).ToList();
-        foreach (var card in drawn)
-        {
-            card.EnergyCost.AddThisTurn(-1);
-        }
         if (await BorrowUtils.TryBorrow(c, Owner, 1))
         {
-            await PlayerCmd.GainEnergy(1m, Owner);
+            foreach (var card in drawn)
+            {
+                card.SetToFreeThisTurn();
+            }
         }
     }
     protected override void OnUpgrade() => DynamicVars["Draw"].UpgradeValueBy(1m);
@@ -265,7 +264,7 @@ public class AcmRegional : LaughmanCard
     protected override void OnUpgrade() => DynamicVars["BonusX"].UpgradeValueBy(1m);
 }
 
-// R13 机器人大赛决赛：机器人立即行动，借用 1 额外行动一次，升级再 +1 次。
+// R13 机器人大赛决赛：机器人立即行动，借用 1 额外行动一次，升级降费。
 [Pool(typeof(LaughmanCardPool))]
 public class RoboticsFinals : LaughmanCard
 {
@@ -290,11 +289,7 @@ public class RoboticsFinals : LaughmanCard
             }
         }
     }
-    protected override void OnUpgrade()
-    {
-        if (Config.WeakHelper.IsWeak) EnergyCost.UpgradeBy(-1);
-        else DynamicVars["Actions"].UpgradeValueBy(1m);
-    }
+    protected override void OnUpgrade() => EnergyCost.UpgradeBy(-1);
 }
 
 // R14 世界技能大赛：从 3 张随机罕见/稀有工程师牌中选一张免费打出，借用 1 再选一张。
@@ -624,13 +619,13 @@ public class CollectiveFire : LaughmanCard
     protected override void OnUpgrade() { DynamicVars.Damage.UpgradeValueBy(4m); DynamicVars["Turns"].UpgradeValueBy(2m); }
 }
 
-// R21 我即浪潮：召唤英雄并进入浪潮模式（全体攻击 + 每回合行动两次）。借用 1：这台英雄休息一回合。消耗（升级去消耗）。
+// R21 我即浪潮：召唤英雄并进入浪潮模式（全体攻击 + 每回合行动两次）。
+// 行动后自我借用，归队效果可以跳过休息窗口。部署牌始终消耗，升级提高生存能力。
 [Pool(typeof(LaughmanCardPool))]
 public class IAmTheWave : LaughmanCard
 {
-    private bool _exhausts = true;
     protected override IEnumerable<DynamicVar> CanonicalVars => new[] { new DynamicVar("MechHp", 25m) };
-    public override IEnumerable<CardKeyword> CanonicalKeywords => _exhausts ? new[] { CardKeyword.Exhaust } : Array.Empty<CardKeyword>();
+    public override IEnumerable<CardKeyword> CanonicalKeywords => new[] { CardKeyword.Exhaust };
     public IAmTheWave() : base(3, CardType.Attack, CardRarity.Rare, TargetType.Self) { }
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
@@ -640,7 +635,7 @@ public class IAmTheWave : LaughmanCard
         // 进入浪潮模式：英雄每回合攻击所有敌人两次，行动后自我借用隐身一回合。
         hero?.EnableTidal();
     }
-    protected override void OnUpgrade() => _exhausts = false;
+    protected override void OnUpgrade() => DynamicVars["MechHp"].UpgradeValueBy(10m);
 }
 
 // R22 新约无人机：召唤新约无人机（偷力量/双方护盾/自残血/攻击0×5）。消耗。
@@ -693,7 +688,7 @@ public class PrecisionEngineering : LaughmanCard
     public PrecisionEngineering() : base(3, CardType.Power, CardRarity.Rare, TargetType.Self) { }
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
-        var mech = await MechManager.SummonMech<EngineerMech>(Owner, DynamicVars["MechHp"].IntValue);
+        var mech = await MechManager.SummonEngineer(Owner, DynamicVars["MechHp"].IntValue, preferPrecision: true);
         if (mech?.Monster is EngineerMech engineer)
         {
             engineer.BlockPerTurn = DynamicVars["Block"].IntValue;
@@ -722,11 +717,11 @@ public class ImpactUL : LaughmanCard
     public override IEnumerable<CardKeyword> CanonicalKeywords => new[] { CardKeyword.Innate, CardKeyword.Exhaust };
     public ImpactUL() : base(4, CardType.Skill, CardRarity.Ancient, TargetType.Self) { }
 
-    // 第一次打出时费用 -1（4→3）：每场战斗开始时施加一个“打出即失效”的 -1 费修正，
-    // 确保没有额外加费也能打出；被复制/回收再次打出则需付全额 4 费。
+    // 每场战斗第一次打出时费用为 3：使用幂等的绝对费用上限，避免未打出时跨战斗叠加减费。
+    // 修正会在打出后失效；被复制/回收再次打出则需付全额 4 费。
     public override Task BeforeCombatStart()
     {
-        EnergyCost.AddUntilPlayed(-1);
+        EnergyCost.SetUntilPlayed(3, reduceOnly: true);
         return Task.CompletedTask;
     }
 

@@ -30,7 +30,7 @@ public class EngineerDeployment : LaughmanCard
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        var mech = await MechManager.SummonMech<EngineerMech>(Owner, DynamicVars["MechHp"].IntValue);
+        var mech = await MechManager.SummonEngineer(Owner, DynamicVars["MechHp"].IntValue, preferPrecision: false);
         if (mech?.Monster is EngineerMech engineer)
         {
             engineer.BlockPerTurn = DynamicVars["Block"].IntValue;

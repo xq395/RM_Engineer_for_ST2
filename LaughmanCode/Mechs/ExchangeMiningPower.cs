@@ -15,11 +15,10 @@ using Laughman.LaughmanCode.Config;
 
 namespace Laughman.LaughmanCode.Mechs;
 
-public class ExchangeMiningPower : CustomPowerModel
+public class ExchangeMiningPower : LaughmanPower
 {
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Counter;
-    public override string? CustomPackedIconPath => "res://" + "laughing_thunder.png".RelicImagePath();
 
     private int _earned;
     private int _strengthGranted;

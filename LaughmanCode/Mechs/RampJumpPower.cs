@@ -16,12 +16,11 @@ namespace Laughman.LaughmanCode.Mechs;
 //  - 本回合该机器人造成的伤害 ×3（结算三倍，多段各段分别翻倍）。
 //  - 本回合该机器人受到的伤害减半。
 // 下一次玩家回合开始时移除，覆盖敌方回合伤害。
-public class RampJumpPower : CustomPowerModel
+public class RampJumpPower : LaughmanPower
 {
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Single;
 
-    public override string? CustomPackedIconPath => "res://" + "laughing_thunder.png".RelicImagePath();
 
     // 造成伤害 ×3。
     public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)

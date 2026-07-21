@@ -6,12 +6,11 @@ using MegaCrit.Sts2.Core.Entities.Powers;
 
 namespace Laughman.LaughmanCode.Mechs;
 
-public sealed class TimeSparethNonePower : CustomPowerModel
+public sealed class TimeSparethNonePower : LaughmanPower
 {
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.None;
     public override PowerInstanceType InstanceType => PowerInstanceType.Instanced;
-    public override string? CustomPackedIconPath => "res://" + "laughing_thunder.png".RelicImagePath();
 
     public override async Task AfterSideTurnStart(
         CombatSide side,

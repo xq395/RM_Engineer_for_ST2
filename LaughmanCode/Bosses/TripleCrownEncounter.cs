@@ -23,9 +23,9 @@ public sealed class TripleCrownEncounter : CustomEncounterModel
     public override bool HasScene => true;
     public override IReadOnlyList<string> Slots => EncounterSlots;
     public override string? CustomRunHistoryIconPath =>
-        "res://Laughman/images/card_portraits/placeholder.png";
+        "res://Laughman/images/boss/triple_crown_logo.png";
     public override string? CustomRunHistoryIconOutlinePath =>
-        "res://Laughman/images/card_portraits/placeholder.png";
+        "res://Laughman/images/boss/triple_crown_logo.png";
 
     public override IEnumerable<MonsterModel> AllPossibleMonsters => new MonsterModel[]
     {

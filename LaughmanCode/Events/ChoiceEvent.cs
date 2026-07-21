@@ -22,7 +22,7 @@ public sealed class ChoiceEvent : CustomEventModel
     private const int Act3Index = 2;
 
     public override string? CustomInitialPortraitPath =>
-        "res://Laughman/images/card_portraits/sprint_u_c.png";
+        "res://Laughman/images/events/choice_event.png";
 
     public override bool IsAllowed(IRunState runState)
         => (runState.CurrentActIndex == Act2Index || runState.CurrentActIndex == Act3Index)

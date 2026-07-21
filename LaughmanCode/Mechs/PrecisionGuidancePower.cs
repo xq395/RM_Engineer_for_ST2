@@ -8,11 +8,10 @@ using MegaCrit.Sts2.Core.ValueProps;
 
 namespace Laughman.LaughmanCode.Mechs;
 
-public class PrecisionGuidancePower : CustomPowerModel
+public class PrecisionGuidancePower : LaughmanPower
 {
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Single;
-    public override string? CustomPackedIconPath => "res://" + "laughing_thunder.png".RelicImagePath();
 
     public int BonusDamage { get; set; }
     public decimal DamageMultiplier { get; set; } = 1m;

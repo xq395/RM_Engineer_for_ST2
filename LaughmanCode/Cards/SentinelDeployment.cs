@@ -25,7 +25,7 @@ public class SentinelDeployment : LaughmanCard
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        await MechManager.SummonMech<SentinelMech>(Owner, DynamicVars["MechHp"].IntValue);
+        await MechManager.SummonSentinel(Owner, DynamicVars["MechHp"].IntValue, preferOperational: true);
     }
 
     protected override void OnUpgrade()
@@ -34,7 +34,7 @@ public class SentinelDeployment : LaughmanCard
     }
 }
 
-// C 趴窝哨兵：0 费召唤一台带力量/敏捷减值的哨兵，其余同哨兵部署。
+// C 趴窝哨兵：0 费召唤一台独立的早期故障版哨兵，并带有力量/敏捷减值。
 [Pool(typeof(LaughmanCardPool))]
 public class StalledSentinel : LaughmanCard
 {
@@ -49,8 +49,9 @@ public class StalledSentinel : LaughmanCard
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        var sentinel = await MechManager.SummonMech<SentinelMech>(Owner, DynamicVars["MechHp"].IntValue);
-        if (sentinel != null)
+        var sentinel = await MechManager.SummonSentinel(Owner, DynamicVars["MechHp"].IntValue, preferOperational: false);
+        // 已有正常哨兵时，趴窝哨兵只强化高阶机体，不再施加故障减值。
+        if (sentinel?.Monster is StalledSentinelMech)
         {
             await PowerCmd.Apply<StrengthPower>(choiceContext, sentinel, DynamicVars["Penalty"].IntValue, Owner.Creature, this);
             await PowerCmd.Apply<DexterityPower>(choiceContext, sentinel, DynamicVars["Penalty"].IntValue, Owner.Creature, this);

@@ -13,11 +13,10 @@ using Laughman.LaughmanCode.Config;
 namespace Laughman.LaughmanCode.Mechs;
 
 // R18 时间管理大师：每台机器人每回合第一次被借用时，抽牌、获得格挡并归队 1。
-public class RuleOverhaulPower : CustomPowerModel
+public class RuleOverhaulPower : LaughmanPower
 {
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Single;
-    public override string? CustomPackedIconPath => "res://" + "laughing_thunder.png".RelicImagePath();
 
     public int BlockAmount { get; set; } = 1;
     private readonly HashSet<Creature> _triggeredMechs = new();

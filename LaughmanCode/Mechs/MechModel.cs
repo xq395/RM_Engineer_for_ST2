@@ -1,4 +1,5 @@
 using BaseLib.Abstracts;
+using BaseLib.Extensions;
 using BaseLib.Utils.NodeFactories;
 using Godot;
 using Laughman.LaughmanCode.Bosses;
@@ -26,12 +27,12 @@ namespace Laughman.LaughmanCode.Mechs;
 // 关键约束（见 docs/mech-summon-system.md）：
 //  - 引擎从不为玩家侧宠物自动 perform move，攻击/格挡/意图全部由挂在玩家身上的
 //    MechCoordinatorPower 手动驱动。因此这里的 move state 只是惰性占位。
-//  - 视觉用占位图（静态 Sprite，无 spine），长宽缩到 1/3，避免占位图过大遮住血条/状态栏。
+//  - 视觉使用按机甲 ID 加载的静态 Sprite（无 spine），长宽缩到 1/3，避免遮住血条/状态栏。
 //  - 每台机器人只负责“描述自己是谁、每回合做什么”（PerformTurn / RefreshIntent），
 //    统一调度、多屏卫结算、金币运维等由协调器负责。
 public abstract class MechModel : CustomMonsterModel
 {
-    // 占位图缩放：整节点长宽缩到 1/3（DefaultScale + Scale 同时设，防止受击 ScaleTo 恢复原大小）。
+    // 战斗立绘缩放：整节点长宽缩到 1/3（DefaultScale + Scale 同时设，防止受击 ScaleTo 恢复原大小）。
     protected const float VisualScale = 1f / 3f;
 
     // 占位血量，真实血量由 MechManager 召唤时用 CreatureCmd.SetMaxAndCurrentHp / GainMaxHp 覆写。
@@ -57,17 +58,24 @@ public abstract class MechModel : CustomMonsterModel
 
     public int BorrowedTurns => Creature.HasPower<BorrowedPower>() ? Creature.GetPower<BorrowedPower>()!.Amount : 0;
 
+    // 再部署代表换上一台全新标准机；有模型内部模式的机甲可覆写并清除旧状态。
+    public virtual void ResetForRedeploy() { }
 
-    // 占位图文件名（位于 <ModId>/images/card_portraits/ 下）。默认用通用占位图。
-    protected virtual string PlaceholderImage => "placeholder.png";
+
+    // 资源文件名由模型 ID 派生，例如 LAUGHMAN-INFANTRY_MECH -> infantry_mech.png。
+    protected virtual string BattleImage => $"{Id.Entry.RemovePrefix().ToLowerInvariant()}.png";
 
     public override NCreatureVisuals? CreateCustomVisuals()
     {
-        var texture = PreloadManager.Cache.GetTexture2D("res://" + PlaceholderImage.CardImagePath());
+        var texture = PreloadManager.Cache.GetTexture2D("res://" + BattleImage.MonsterImagePath());
         if (texture == null)
         {
-            MainFile.Logger.Info($"[{GetType().Name}] placeholder texture not found, falling back to default visuals");
-            return null;
+            MainFile.Logger.Info($"[{GetType().Name}] battle sprite not found, falling back to placeholder");
+            texture = PreloadManager.Cache.GetTexture2D("res://" + "placeholder.png".CardImagePath());
+            if (texture == null)
+            {
+                return null;
+            }
         }
 
         var visuals = NodeFactory<NCreatureVisuals>.CreateFromResource(texture);

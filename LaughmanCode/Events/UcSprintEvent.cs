@@ -15,13 +15,14 @@ namespace Laughman.LaughmanCode.Events;
 
 // 事件2「决赛准备」（第三层特殊事件）：只能由任务卡 冲刺UC 的 ModifyNextEvent 触发，
 // 不进普通事件池（IsAllowed 恒 false，避免随机刷出）。
-//  - 「我已做好准备！」：将 冲击UL 替换为 剑指春茧（升级版），获得遗物 最后检查。
+//  - 「我已做好准备！」：将 冲击UL 替换为 剑指春茧（升级版）；没有冲击UL时直接获得，
+//    保证任务线不依赖随机拿到古老牙齿。随后获得遗物 最后检查。
 //  - 「跑路了兄弟，跑路了」：获得遗物 美美撤离。
 // 两个选项都会清除牌组里的任务卡 冲刺UC。
 public sealed class UcSprintEvent : CustomEventModel
 {
     public override string? CustomInitialPortraitPath =>
-        "res://Laughman/images/card_portraits/road_to_spring_cocoon.png";
+        "res://Laughman/images/events/uc_sprint_event.png";
 
     // 不参与普通事件随机池；仅通过任务卡强制触发。
     public override bool IsAllowed(IRunState runState) => false;
@@ -35,18 +36,27 @@ public sealed class UcSprintEvent : CustomEventModel
         };
     }
 
-    // 「我已做好准备！」：冲击UL → 剑指春茧（升级），获得遗物 最后检查。
+    // 「我已做好准备！」：冲击UL → 剑指春茧（升级）；没有冲击UL则直接获得。
     private async Task Ready()
     {
         var impacts = Owner.Deck.Cards.Where(c => c is ImpactUL).ToList();
-        foreach (var impact in impacts)
+        if (impacts.Count == 0)
         {
             var cocoon = Owner.RunState.CreateCard<RoadToSpringCocoon>(Owner);
-            if (!cocoon.IsUpgraded)
+            CardCmd.Upgrade(cocoon);
+            CardCmd.PreviewCardPileAdd(await CardPileCmd.Add(cocoon, PileType.Deck), 2f);
+        }
+        else
+        {
+            foreach (var impact in impacts)
             {
-                CardCmd.Upgrade(cocoon);
+                var cocoon = Owner.RunState.CreateCard<RoadToSpringCocoon>(Owner);
+                if (!cocoon.IsUpgraded)
+                {
+                    CardCmd.Upgrade(cocoon);
+                }
+                await CardCmd.Transform(impact, cocoon);
             }
-            await CardCmd.Transform(impact, cocoon);
         }
 
         var relic = ModelDb.Relic<FinalCheck>().ToMutable();

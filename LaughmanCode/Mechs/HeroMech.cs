@@ -49,6 +49,14 @@ public class HeroMech : MechModel, IRevivableMech
         TidalMode = true;
     }
 
+    public override void ResetForRedeploy()
+    {
+        LobFireMode = false;
+        LobFireDamage = 0;
+        TidalMode = false;
+        _resting = false;
+    }
+
     public override async Task PerformTurn(Player owner, ICombatState combatState)
     {
         if (LobFireMode)

@@ -33,9 +33,9 @@
          older NuGet 0.2.6, otherwise CustomEventModel and other BaseLib API differ and crash. -->
     <ItemGroup>
         <WorkshopBaseLib Include="$(SteamLibraryPath)/workshop/content/2868840/**/BaseLib.dll" />
-        <!-- RitsuLib runtime DLL for the current game version (0.108.0). Used only for the
+        <!-- RitsuLib runtime DLL for the current game version (0.109.0). Used only for the
              timeline (Epoch/Story) declarative framework. -->
-        <WorkshopRitsuLib Include="$(SteamLibraryPath)/workshop/content/2868840/**/lib/0.108.0/STS2-RitsuLib.dll" />
+        <WorkshopRitsuLib Include="$(SteamLibraryPath)/workshop/content/2868840/**/lib/0.109.0/STS2-RitsuLib.dll" />
     </ItemGroup>
 
     <ItemGroup>
