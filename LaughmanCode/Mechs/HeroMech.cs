@@ -38,6 +38,7 @@ public class HeroMech : MechModel, IRevivableMech
     // 由 U5 卡调用：切换为吊射模式并设定大招伤害。
     public void EnableLobFire(int damage)
     {
+        TidalMode = false;
         LobFireMode = true;
         LobFireDamage = damage;
         _resting = false; // 切换后的首次行动立即开火。
@@ -46,6 +47,9 @@ public class HeroMech : MechModel, IRevivableMech
     // 由「我即浪潮」调用：切换为浪潮模式（全体攻击 + 每回合行动两次，行动后自我借用隐身一回合）。
     public void EnableTidal()
     {
+        LobFireMode = false;
+        LobFireDamage = 0;
+        _resting = false;
         TidalMode = true;
     }
 

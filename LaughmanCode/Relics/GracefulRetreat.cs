@@ -1,9 +1,11 @@
 using BaseLib.Utils;
 using System.Linq;
 using Laughman.LaughmanCode.Character;
+using Laughman.LaughmanCode.Potions;
 using MegaCrit.Sts2.Core.CardSelection;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Players;
+using MegaCrit.Sts2.Core.Entities.Potions;
 using MegaCrit.Sts2.Core.Entities.Relics;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
@@ -25,9 +27,15 @@ public class GracefulRetreat : LaughmanRelic
     {
         await PlayerCmd.GainGold(Gold, Owner);
 
-        // 获得 2 瓶随机药水（从角色药水池随机抽）。
-        var pool = ModelDb.PotionPool<LaughmanPotionPool>()
-            .GetUnlockedPotionsForSharedPool(Owner.UnlockState).ToList();
+        // 事件奖励不受时间线解锁门槛影响，否则早期获得该遗物时药水池可能为空。
+        var pool = new PotionModel[]
+        {
+            ModelDb.Potion<SpareBattery>(),
+            ModelDb.Potion<CoolantFlask>(),
+            ModelDb.Potion<CalibrationFluid>(),
+            ModelDb.Potion<EmergencySolder>(),
+            ModelDb.Potion<OverclockInjector>()
+        }.ToList();
         if (pool.Count > 0)
         {
             for (int i = 0; i < Potions; i++)

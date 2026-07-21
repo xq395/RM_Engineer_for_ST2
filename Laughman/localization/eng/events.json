@@ -2,7 +2,7 @@
   "LAUGHMAN-CHOICE_EVENT.title": "抉择……抉择……",
   "LAUGHMAN-CHOICE_EVENT.pages.INITIAL.description": "出线了！要不要打 UC 呢？",
   "LAUGHMAN-CHOICE_EVENT.pages.INITIAL.options.MUST_GO.title": "必须！",
-  "LAUGHMAN-CHOICE_EVENT.pages.INITIAL.options.MUST_GO.description": "获得任务牌 [gold]冲刺UC[/gold]。在第三层解锁一个特殊事件。",
+  "LAUGHMAN-CHOICE_EVENT.pages.INITIAL.options.MUST_GO.description": "获得任务牌 [gold]冲刺UC[/gold]。第三层的下一个事件将变为[gold]决赛准备[/gold]。",
   "LAUGHMAN-CHOICE_EVENT.pages.INITIAL.options.NEVER_HAPPY.title": "从来没觉得打RM开心过……",
   "LAUGHMAN-CHOICE_EVENT.pages.INITIAL.options.NEVER_HAPPY.description": "获得遗物 [gold]涂满的笔记本[/gold]（将一张神化和一张悔恨加入牌组）。",
   "LAUGHMAN-CHOICE_EVENT.pages.RESULT_MUST.description": "你攥紧了报名表。这一届，拼了。",
@@ -11,9 +11,9 @@
   "LAUGHMAN-UC_SPRINT_EVENT.title": "决赛准备",
   "LAUGHMAN-UC_SPRINT_EVENT.pages.INITIAL.description": "全阵容大赛就在眼前。机库灯火通明，队友们都在等你的决定。",
   "LAUGHMAN-UC_SPRINT_EVENT.pages.INITIAL.options.READY.title": "我已做好准备！",
-  "LAUGHMAN-UC_SPRINT_EVENT.pages.INITIAL.options.READY.description": "将你的 [gold]冲击UL[/gold] 替换为 [gold]剑指春茧[/gold]（升级版）；若没有，则直接获得。并获得遗物 [gold]最后检查[/gold]。",
+  "LAUGHMAN-UC_SPRINT_EVENT.pages.INITIAL.options.READY.description": "将牌组中所有 [gold]冲击UL[/gold] 替换为升级后的[gold]剑指春茧[/gold]；若没有，则获得一张。并获得遗物[gold]最后检查[/gold]。",
   "LAUGHMAN-UC_SPRINT_EVENT.pages.INITIAL.options.RUN_AWAY.title": "跑路了兄弟，跑路了",
-  "LAUGHMAN-UC_SPRINT_EVENT.pages.INITIAL.options.RUN_AWAY.description": "获得遗物 [gold]美美撤离[/gold]（300 金币、2 瓶随机药水，从牌组移除 5 张牌）。",
-  "LAUGHMAN-UC_SPRINT_EVENT.pages.RESULT_READY.description": "所有指示灯转绿。上场吧，冠军。",
+  "LAUGHMAN-UC_SPRINT_EVENT.pages.INITIAL.options.RUN_AWAY.description": "获得遗物 [gold]美美撤离[/gold]（300 金币、尝试获得 2 瓶随机工程师药水，从牌组移除至多 5 张牌）。",
+  "LAUGHMAN-UC_SPRINT_EVENT.pages.RESULT_READY.description": "所有指示灯转绿。上场吧，去把冠军拿回来。",
   "LAUGHMAN-UC_SPRINT_EVENT.pages.RESULT_RUN.description": "你潇洒地打包好行李。人生的赛场，不止这一个。"
 }

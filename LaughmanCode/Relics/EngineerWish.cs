@@ -14,4 +14,16 @@ public class EngineerWish : LaughingThunderBase
 {
     // 基础 -1，每访问一次先古之民回升 1 点，最高 +2/+2。
     protected override int StatModifier => -1 + AncientVisits;
+
+    public override Task AfterObtained()
+    {
+        // 欧洛巴斯在当前先古房间内替换初始遗物；旧实例上刚排队的机会不会自动复制。
+        // 既往访问已在此前战斗后兑现，因此只补当前这一次，并同步调度进度。
+        if (AncientVisits > 0 && ScheduledAncientVisits == 0)
+        {
+            PendingTransforms = 1;
+            ScheduledAncientVisits = AncientVisits;
+        }
+        return Task.CompletedTask;
+    }
 }

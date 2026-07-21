@@ -18,7 +18,7 @@ public class GyroSpinPower : LaughmanPower
 
     public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
     {
-        if (target == Owner && Owner.Monster is MechModel)
+        if (target == Owner)
         {
             return 0.5m;
         }

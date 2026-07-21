@@ -2,7 +2,7 @@
   "LAUGHMAN-WEAK_MODE_SECTION.title": "平衡模式",
   "LAUGHMAN-WEAK_MODE.title": "削弱版",
   "LAUGHMAN-WEAK_MODE.hover.title": "削弱版",
-  "LAUGHMAN-WEAK_MODE.hover.desc": "开启后（需重启游戏），队员稳定层数降为2，机械成长、现场维修、复活行动、熬夜调车重复返能、时间管理大师触发次数、机器人大赛决赛行动次数、精密工程X加值和兑矿减伤会切换为削弱值。整体强度约为比原版略强。",
+  "LAUGHMAN-WEAK_MODE.hover.desc": "开启后（需重启游戏）：队员稳定层数由 3 降至 2；机械成长与现场维修数值降低；基地补给复活的机器人会晕眩；熬夜调车的重复段不再返还能量；时间管理大师每回合至多触发一次；精密工程升级后不再提高 X 加值；4 层及以上兑矿的减伤由 50% 降至 25%。整体强度略高于原版角色。",
   "LAUGHMAN-CROSS_CHARACTER_CONTENT_SECTION.title": "其他角色内容共享",
   "LAUGHMAN-SHARE_EVENTS_WITH_OTHER_CHARACTERS.title": "共享模组事件",
   "LAUGHMAN-SHARE_EVENTS_WITH_OTHER_CHARACTERS.hover.title": "共享模组事件",
@@ -15,5 +15,5 @@
   "LAUGHMAN-SHARE_RELICS_WITH_OTHER_CHARACTERS.hover.desc": "开启后，本模组遗物会加入共享遗物池，其他角色也可获得。关闭后，仅RM工程师可获得。事件专属和初始遗物仍遵循各自的获取条件。修改后需重启游戏。",
   "LAUGHMAN-SHARE_BOSSES_WITH_OTHER_CHARACTERS.title": "共享模组Boss战",
   "LAUGHMAN-SHARE_BOSSES_WITH_OTHER_CHARACTERS.hover.title": "共享模组Boss战",
-  "LAUGHMAN-SHARE_BOSSES_WITH_OTHER_CHARACTERS.hover.desc": "开启后，未使用RM工程师的队伍也可能在对应章节遇到本模组Boss。关闭后，仅含RM工程师的队伍会遇到。修改后需重启游戏。"
+  "LAUGHMAN-SHARE_BOSSES_WITH_OTHER_CHARACTERS.hover.desc": "开启后，未使用RM工程师的队伍也可能在荣耀章节遇到本模组 Boss。关闭后，仅含RM工程师的队伍会遇到。修改后需重启游戏。"
 }

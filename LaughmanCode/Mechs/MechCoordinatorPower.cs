@@ -34,6 +34,45 @@ public class MechCoordinatorPower : LaughmanPower
     public override PowerStackType StackType => PowerStackType.Single;
     public override bool ShouldPlayVfx => false;
 
+    public override async Task AfterSideTurnStart(
+        CombatSide side,
+        IReadOnlyList<Creature> participants,
+        ICombatState combatState)
+    {
+        var owner = Owner.PetOwner ?? (Owner.IsPlayer ? Owner.Player : null);
+        if (owner == null || side != Owner.Side)
+        {
+            return;
+        }
+
+        // Pet powers are not hook listeners, so their turn counters must be settled here.
+        foreach (var mech in GetMechs(owner).Where(mech => !mech.Creature.IsDead))
+        {
+            foreach (var power in new PowerModel?[]
+                     {
+                         mech.Creature.GetPower<BorrowedPower>(),
+                         mech.Creature.GetPower<GyroSpinPower>()
+                     })
+            {
+                if (power == null)
+                {
+                    continue;
+                }
+                if (power.Amount <= 1)
+                {
+                    await PowerCmd.Remove(power);
+                }
+                else
+                {
+                    await PowerCmd.ModifyAmount(
+                        new ThrowingPlayerChoiceContext(), power, -1m, null, null);
+                }
+            }
+        }
+
+        RefreshAllIntents();
+    }
+
 
     // 玩家回合结束前：驱动所有机器人。
     // 放在回合结束而不是开始，能让当回合部署的机器人立刻产生收益，也让“飞坡”等本回合增益生效。
